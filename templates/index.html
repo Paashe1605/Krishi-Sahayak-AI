@@ -24,9 +24,8 @@
         .submit-btn { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .submit-btn:hover { background: #1b5e20; }
 
-        /* Results */
-        #result-area { display: none; margin-top: 25px; text-align: left; background: #e8f5e9; padding: 15px; border-radius: 10px; border: 1px solid #c8e6c9; }
-        #loading { display: none; color: #666; margin-top: 10px; }
+        /* Loading Overlay */
+        #loading { display: none; color: #2e7d32; font-weight: bold; margin-top: 20px; }
         img.preview { max-width: 100%; border-radius: 10px; margin-top: 10px; }
         
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
@@ -68,25 +67,19 @@
         <button type="submit" class="submit-btn">Diagnose (इलाज बतायें)</button>
     </form>
 
-    <div id="loading">⏳ analyzing plant health... please wait...</div>
-
-    <div id="result-area">
-        <h3>📢 Diagnosis:</h3>
-        <p id="textOutput" style="white-space: pre-wrap;"></p>
-        
-        <h4>🔊 Listen (सुनें):</h4>
-        <audio id="audioPlayer" controls style="width: 100%;"></audio>
+    <div id="loading">
+        <p>⏳ Analyzing plant health...</p>
+        <p style="font-size: 0.9em; color: #666;">This may take a few seconds.</p>
     </div>
 </div>
 
 <script>
-    // --- 1. Voice-to-Text Logic (Web Speech API) ---
+    // --- 1. Voice-to-Text Logic ---
     function startDictation() {
         if (window.hasOwnProperty('webkitSpeechRecognition')) {
             var recognition = new webkitSpeechRecognition();
             var langSelect = document.getElementById('language').value;
             
-            // Set simplistic language codes for recognition
             var langMap = {'Hindi': 'hi-IN', 'English': 'en-US', 'Marathi': 'mr-IN', 'Tamil': 'ta-IN'};
             recognition.lang = langMap[langSelect] || 'en-US';
             
@@ -126,13 +119,13 @@
         output.style.display = 'block';
     }
 
-    // --- 3. Form Submission (AJAX) ---
+    // --- 3. Form Submission (AJAX + Redirect) ---
     document.getElementById('diagnoseForm').onsubmit = async function(e) {
         e.preventDefault();
         
+        // Show loading, hide previous errors
         document.getElementById('loading').style.display = 'block';
-        document.getElementById('result-area').style.display = 'none';
-
+        
         var formData = new FormData(this);
 
         try {
@@ -143,17 +136,12 @@
 
             let data = await response.json();
 
-            document.getElementById('loading').style.display = 'none';
-            
-            if(data.status === 'success') {
-                document.getElementById('result-area').style.display = 'block';
-                document.getElementById('textOutput').innerText = data.diagnosis;
-                
-                let audio = document.getElementById('audioPlayer');
-                audio.src = data.audio_url;
-                audio.play(); // Auto-play the diagnosis
+            if(data.status === 'success' && data.redirect_url) {
+                // REDIRECT TO THE NEW RESULT PAGE
+                window.location.href = data.redirect_url;
             } else {
-                alert("Error: " + data.error);
+                document.getElementById('loading').style.display = 'none';
+                alert("Error: " + (data.error || "Unknown error"));
             }
         } catch (error) {
             console.error('Error:', error);

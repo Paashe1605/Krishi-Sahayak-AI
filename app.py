@@ -1,10 +1,10 @@
 import os
 import uuid
-from flask import Flask, render_template, request, jsonify
+import json
+from flask import Flask, render_template, request, jsonify, url_for
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
-# Import our custom modules
 from models import db, Diagnosis
 from kisan_agent import KisanMitraAgent
 
@@ -15,66 +15,85 @@ app.config['SECRET_KEY'] = 'kisan-mitra-hackathon-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///kisanmitra.db'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
-# Ensure folders exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs('static/audio', exist_ok=True)
 
 db.init_app(app)
 
-# Initialize Agent
 agent = None
 try:
-    # UPDATED: Load GCP Project configuration instead of API Key
     project_id = os.getenv('GOOGLE_CLOUD_PROJECT')
     location = os.getenv('GOOGLE_CLOUD_LOCATION')
-    
-    # Pass project details to the agent
     agent = KisanMitraAgent(project_id, location)
     print("✅ KisanMitra Agent is Active (Vertex AI)")
 except Exception as e:
     print(f"⚠️ Agent Offline: {e}")
-    
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/diagnose', methods=['POST'])
 def diagnose():
-    """
-    Handles the form submission: Image + Text/Voice Query
-    """
+    """Handles Image + Text/Voice Query and returns redirect URL"""
     if 'image' not in request.files:
         return jsonify({'error': 'No image uploaded'}), 400
     
     file = request.files['image']
-    user_query = request.form.get('query', '') # The text (typed or voice-converted)
+    user_query = request.form.get('query', '')
     language = request.form.get('language', 'Hindi')
 
     if file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
 
     if file:
-        # 1. Save the Image
         filename = secure_filename(f"{uuid.uuid4().hex[:8]}_{file.filename}")
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
-        # 2. Ask the Agent
         if not agent:
-            return jsonify({'error': 'AI Agent is not configured correctly.'}), 500
+            return jsonify({'error': 'AI Agent configuration error.'}), 500
 
-        # Get Text Diagnosis
-        diagnosis_text = agent.analyze_crop(filepath, user_query, language)
+        # 1. Get Structured Analysis (JSON Dictionary)
+        analysis_data = agent.analyze_crop(filepath, user_query, language)
 
-        # Get Audio Version
-        audio_url = agent.generate_audio(diagnosis_text, language)
+        # 2. Generate Audio (Use the concise audio script)
+        audio_text = analysis_data.get('audio_script', analysis_data.get('diagnosis'))
+        audio_url = agent.generate_audio(audio_text, language)
 
+        # 3. Save to DB (Store JSON as string in ai_diagnosis column)
+        new_diagnosis = Diagnosis(
+            image_filename=filename,
+            user_query=user_query,
+            ai_diagnosis=json.dumps(analysis_data), # Serialize JSON to string
+            audio_path=audio_url
+        )
+        db.session.add(new_diagnosis)
+        db.session.commit()
+
+        # 4. Return Redirect URL to the new result page
         return jsonify({
             'status': 'success',
-            'diagnosis': diagnosis_text,
-            'audio_url': audio_url,
-            'image_url': f"/static/uploads/{filename}"
+            'redirect_url': url_for('show_result', result_id=new_diagnosis.id)
         })
+
+@app.route('/result/<int:result_id>')
+def show_result(result_id):
+    """Render the 2x2 grid result page"""
+    diagnosis_record = db.session.get(Diagnosis, result_id)
+    if not diagnosis_record:
+        return "Diagnosis not found", 404
+    
+    # Parse the stored JSON string back to a Python Dictionary
+    try:
+        data = json.loads(diagnosis_record.ai_diagnosis)
+    except:
+        # Fallback for old/legacy text data
+        data = {"diagnosis": diagnosis_record.ai_diagnosis, "stats": {}, "remedies_video_queries": [], "products": []}
+    
+    return render_template('result.html', 
+                           diagnosis=diagnosis_record, 
+                           data=data)
 
 if __name__ == '__main__':
     with app.app_context():
