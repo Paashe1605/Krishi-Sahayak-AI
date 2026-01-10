@@ -4,39 +4,84 @@
     <title>KisanMitra AI 🌾</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f9f4; text-align: center; padding: 20px; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { color: #2e7d32; margin-bottom: 10px; }
-        .logo { font-size: 50px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f9f4; text-align: center; padding: 20px; color: #333; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(46, 125, 50, 0.1); }
+        h1 { color: #2e7d32; margin-bottom: 5px; font-weight: 700; }
+        .subtitle { color: #666; margin-bottom: 25px; font-size: 0.95rem; }
+        .logo { font-size: 60px; display: block; margin-bottom: 10px; }
         
         /* Form Elements */
-        .input-group { margin: 15px 0; text-align: left; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input[type="file"], select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .input-group { margin: 20px 0; text-align: left; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; font-size: 0.9rem; }
+        input[type="file"], select, textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 12px; box-sizing: border-box; font-family: inherit; transition: 0.3s; }
+        input[type="file"]:focus, select:focus, textarea:focus { border-color: #2e7d32; outline: none; }
         
-        /* Voice Input Styling */
+        /* Voice Input */
         .voice-box { display: flex; gap: 10px; }
-        textarea { resize: none; height: 60px; }
-        .mic-btn { background: #ff9800; border: none; color: white; padding: 0 15px; border-radius: 8px; cursor: pointer; font-size: 20px; }
-        .mic-btn.listening { background: #f44336; animation: pulse 1s infinite; }
+        textarea { resize: none; height: 70px; }
+        .mic-btn { background: #ff9800; border: none; color: white; padding: 0 20px; border-radius: 12px; cursor: pointer; font-size: 22px; transition: 0.2s; }
+        .mic-btn:hover { background: #f57c00; }
+        .mic-btn.listening { background: #f44336; animation: micPulse 1.5s infinite; }
         
         /* Main Button */
-        .submit-btn { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .submit-btn:hover { background: #1b5e20; }
+        .submit-btn { background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%); color: white; border: none; padding: 16px; width: 100%; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3); transition: transform 0.2s; }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4); }
 
-        /* Loading Overlay */
-        #loading { display: none; color: #2e7d32; font-weight: bold; margin-top: 20px; }
-        img.preview { max-width: 100%; border-radius: 10px; margin-top: 10px; }
+        /* --- BREATHE LOADER (Inhale/Exhale) --- */
+        #loading { display: none; margin-top: 40px; text-align: center; }
         
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .breathe-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .leaf-icon {
+            font-size: 40px;
+            z-index: 2;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .breathe-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: rgba(76, 175, 80, 0.2);
+            z-index: 1;
+            animation: breathe 4s ease-in-out infinite; /* 4s Inhale-Exhale Cycle */
+        }
+        
+        .breathe-ring:nth-child(2) { animation-delay: 0.5s; background-color: rgba(76, 175, 80, 0.15); }
+        .breathe-ring:nth-child(3) { animation-delay: 1s; background-color: rgba(76, 175, 80, 0.1); }
+
+        .loading-text { color: #2e7d32; font-weight: 600; font-size: 1.1rem; letter-spacing: 0.5px; animation: textFade 2s ease-in-out infinite; }
+        .loading-sub { color: #888; font-size: 0.85rem; margin-top: 5px; }
+
+        /* Animations */
+        @keyframes breathe {
+            0% { transform: scale(0.8); opacity: 0.3; } /* Exhale point */
+            50% { transform: scale(1.3); opacity: 0.8; box-shadow: 0 0 30px rgba(46, 125, 50, 0.2); } /* Inhale point */
+            100% { transform: scale(0.8); opacity: 0.3; } /* Exhale point */
+        }
+
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes textFade { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+        @keyframes micPulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        
+        img.preview { max-width: 100%; border-radius: 12px; margin-top: 15px; border: 2px solid #eee; display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="logo">🌾</div>
+    <span class="logo">🌾</span>
     <h1>KisanMitra AI</h1>
-    <p>Plant Doctor & Companion</p>
+    <p class="subtitle">Your Expert Plant Doctor & Companion</p>
 
     <form id="diagnoseForm">
         <div class="input-group">
@@ -52,25 +97,31 @@
         <div class="input-group">
             <label>Upload Photo (फोटो लें):</label>
             <input type="file" name="image" accept="image/*" required onchange="previewImage(event)">
-            <img id="imgPreview" class="preview" style="display:none;">
+            <img id="imgPreview" class="preview">
         </div>
 
         <div class="input-group">
             <label>Ask a Question (Text or Voice):</label>
             <div class="voice-box">
-                <textarea name="query" id="queryBox" placeholder="Type here or click mic... (e.g., 'What is this disease?')"></textarea>
+                <textarea name="query" id="queryBox" placeholder="Type here or click mic... (e.g., 'My tomato leaves are turning yellow')"></textarea>
                 <button type="button" class="mic-btn" onclick="startDictation()" title="Speak">🎤</button>
             </div>
-            <small id="micStatus" style="color: #888;">Click mic to speak</small>
+            <small id="micStatus" style="color: #888; margin-top:5px; display:block;">Click mic to speak</small>
         </div>
 
-        <button type="submit" class="submit-btn">Diagnose (इलाज बतायें)</button>
+        <button type="submit" class="submit-btn">Diagnose Now (इलाज बतायें)</button>
     </form>
 
     <div id="loading">
-        <p>⏳ Analyzing plant health...</p>
-        <p style="font-size: 0.9em; color: #666;">This may take a few seconds.</p>
+        <div class="breathe-container">
+            <div class="breathe-ring"></div>
+            <div class="breathe-ring"></div>
+            <div class="leaf-icon">🌿</div>
+        </div>
+        <div class="loading-text">Analyzing Plant Health...</div>
+        <div class="loading-sub">Connecting to Agronomist AI...</div>
     </div>
+
 </div>
 
 <script>
@@ -79,10 +130,8 @@
         if (window.hasOwnProperty('webkitSpeechRecognition')) {
             var recognition = new webkitSpeechRecognition();
             var langSelect = document.getElementById('language').value;
-            
             var langMap = {'Hindi': 'hi-IN', 'English': 'en-US', 'Marathi': 'mr-IN', 'Tamil': 'ta-IN'};
             recognition.lang = langMap[langSelect] || 'en-US';
-            
             recognition.continuous = false;
             recognition.interimResults = false;
 
@@ -90,22 +139,18 @@
                 document.querySelector('.mic-btn').classList.add('listening');
                 document.getElementById('micStatus').innerText = "Listening... Speak now.";
             };
-
             recognition.onerror = function(e) {
                 document.querySelector('.mic-btn').classList.remove('listening');
                 document.getElementById('micStatus').innerText = "Error: " + e.error;
             };
-
             recognition.onend = function() {
                 document.querySelector('.mic-btn').classList.remove('listening');
                 document.getElementById('micStatus').innerText = "Click mic to speak";
             };
-
             recognition.onresult = function(e) {
                 document.getElementById('queryBox').value = e.results[0][0].transcript;
                 recognition.stop();
             };
-
             recognition.start();
         } else {
             alert("Voice input is not supported in this browser. Please use Chrome.");
@@ -123,7 +168,8 @@
     document.getElementById('diagnoseForm').onsubmit = async function(e) {
         e.preventDefault();
         
-        // Show loading, hide previous errors
+        // Hide form, Show Breathe Loader
+        document.getElementById('diagnoseForm').style.display = 'none';
         document.getElementById('loading').style.display = 'block';
         
         var formData = new FormData(this);
@@ -137,16 +183,19 @@
             let data = await response.json();
 
             if(data.status === 'success' && data.redirect_url) {
-                // REDIRECT TO THE NEW RESULT PAGE
+                // Success: Redirect to Result Page
                 window.location.href = data.redirect_url;
             } else {
+                // Error: Restore form
                 document.getElementById('loading').style.display = 'none';
+                document.getElementById('diagnoseForm').style.display = 'block';
                 alert("Error: " + (data.error || "Unknown error"));
             }
         } catch (error) {
             console.error('Error:', error);
             document.getElementById('loading').style.display = 'none';
-            alert("Something went wrong!");
+            document.getElementById('diagnoseForm').style.display = 'block';
+            alert("Connection error!");
         }
     };
 </script>

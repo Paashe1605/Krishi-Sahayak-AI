@@ -3,16 +3,16 @@
 <head>
     <title>Analysis Result - KisanMitra AI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root { --primary: #2e7d32; --bg: #f4f9f4; --card-bg: #ffffff; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: #333; }
         
-        .header { text-align: center; margin-bottom: 30px; }
+        .header { text-align: center; margin-bottom: 20px; }
         .header h1 { color: var(--primary); display: inline-block; margin: 0; }
         .back-btn { float: left; text-decoration: none; color: #555; font-weight: bold; font-size: 1.2rem; }
         
-        /* 2x2 Grid Layout */
         .grid-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -20,182 +20,152 @@
             gap: 20px;
             max-width: 1200px;
             margin: auto;
+            align-items: stretch;
         }
 
-        /* Card Styling */
         .card {
             background: var(--card-bg);
             border-radius: 15px;
-            padding: 25px;
+            padding: 20px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.05);
             border: 1px solid #e0e0e0;
-            transition: transform 0.2s;
             display: flex;
             flex-direction: column;
         }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
         
-        h2 { color: var(--primary); font-size: 1.4rem; border-bottom: 2px solid #e8f5e9; padding-bottom: 10px; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+        h2 { color: var(--primary); font-size: 1.3rem; border-bottom: 2px solid #e8f5e9; padding-bottom: 10px; margin-top: 0; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
         
-        /* Section 1: Diagnosis */
-        .diagnosis-content { font-size: 1.05rem; line-height: 1.6; white-space: pre-wrap; flex-grow: 1; color: #444; }
-        .audio-player { width: 100%; margin-top: 15px; }
-        .plant-img { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; float: right; margin-left: 15px; border: 2px solid #eee; }
-
-        /* Section 2: Stats */
-        .stats-container { display: flex; justify-content: space-around; align-items: center; height: 100%; padding-top: 10px;}
-        .stat-box { text-align: center; }
-        .stat-val { font-size: 2.2rem; font-weight: bold; color: var(--primary); display: block; }
-        .stat-label { color: #666; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;}
-        
-        /* Section 3: Videos */
-        .video-list { list-style: none; padding: 0; margin: 0; }
-        .video-item { margin-bottom: 15px; display: flex; align-items: center; background: #fafafa; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
-        .video-icon { color: #f44336; font-size: 2rem; margin-right: 15px; }
-        .video-link { text-decoration: none; color: #333; font-weight: 600; flex-grow: 1; }
-        .video-link:hover { color: #d32f2f; }
-        
-        /* Section 4: Products */
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-        .product-card { background: #fffbe6; border: 1px solid #ffe58f; padding: 10px; border-radius: 8px; text-align: center; text-decoration: none; color: #333; transition: 0.2s; }
-        .product-card:hover { background: #ffe58f; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .p-type { display: block; font-size: 0.75rem; color: #856404; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
-        .p-name { font-weight: 600; font-size: 0.95rem; }
-        .buy-text { margin-top:5px; font-size:0.8rem; color:#2e7d32; font-weight: bold; }
-
-        /* Responsive Mobile */
-        @media (max-width: 768px) {
-            .grid-container { grid-template-columns: 1fr; }
+        /* Diagnosis Scroll & Justify */
+        .diagnosis-container { display: flex; flex-direction: column; height: 100%; }
+        .diagnosis-scroll-box {
+            font-size: 1.05rem; 
+            line-height: 1.6; 
+            white-space: pre-wrap;
+            color: #444; 
+            max-height: 350px; 
+            overflow-y: auto; 
+            text-align: justify;
+            padding-right: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: #2e7d32 #f1f1f1;
         }
+        .diagnosis-scroll-box::-webkit-scrollbar { width: 8px; }
+        .diagnosis-scroll-box::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .diagnosis-scroll-box::-webkit-scrollbar-thumb { background: #2e7d32; border-radius: 4px; }
+
+        .plant-img { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; float: right; margin-left: 15px; margin-bottom: 10px; border: 2px solid #eee; }
+        .audio-player { width: 100%; margin-top: auto; padding-top: 15px; }
+
+        /* Stats Filled Layout */
+        .stats-container { 
+            display: flex; 
+            justify-content: space-evenly; 
+            align-items: center; 
+            flex-grow: 1; 
+            padding: 10px 0; 
+        }
+        .stat-box { text-align: center; }
+        .stat-val { font-size: 2rem; font-weight: bold; color: var(--primary); display: block; margin-bottom: 5px; }
+        .stat-label { color: #666; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;}
+        
+        /* Video & Products */
+        .video-list { list-style: none; padding: 0; margin: 0; max-height: 250px; overflow-y: auto; }
+        .video-item { margin-bottom: 10px; display: flex; align-items: center; background: #fafafa; padding: 10px; border-radius: 8px; border: 1px solid #eee; transition: 0.2s;}
+        .video-item:hover { background: #fff; border-color: #ffcdd2; }
+        .video-icon { color: #f44336; font-size: 1.8rem; margin-right: 15px; }
+        .video-link { text-decoration: none; color: #333; font-weight: 600; flex-grow: 1; font-size: 0.95rem; }
+        
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+        .product-card { background: #fffbe6; border: 1px solid #ffe58f; padding: 12px; border-radius: 8px; text-align: center; text-decoration: none; color: #333; transition: 0.2s; }
+        .product-card:hover { background: #ffe58f; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .p-type { display: block; font-size: 0.7rem; color: #856404; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
+        .p-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 5px; display: block;}
+        .buy-text { font-size:0.8rem; color:#2e7d32; font-weight: bold; }
+
+        @media (max-width: 768px) { .grid-container { grid-template-columns: 1fr; } .diagnosis-scroll-box { max-height: none; overflow-y: visible; } }
     </style>
 </head>
 <body>
-
     <div class="header">
         <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> Home</a>
         <h1>🌾 KisanMitra Diagnosis</h1>
     </div>
-
     <div class="grid-container">
-        
         <div class="card">
             <h2><i class="fas fa-stethoscope"></i> Diagnosis (निदान)</h2>
-            <div>
-                <img src="/static/uploads/{{ diagnosis.image_filename }}" class="plant-img" alt="Plant Image">
-                <div class="diagnosis-content">
+            <div class="diagnosis-container">
+                <div class="diagnosis-scroll-box">
+                    <img src="/static/uploads/{{ diagnosis.image_filename }}" class="plant-img" alt="Plant Image">
                     {{ data.diagnosis }}
                 </div>
+                {% if diagnosis.audio_path %}
+                <div style="margin-top: 15px;">
+                    <p style="margin-bottom: 5px; color: #666; font-size: 0.9rem;"><strong><i class="fas fa-volume-up"></i> Listen to Advice:</strong></p>
+                    <audio controls class="audio-player"><source src="{{ diagnosis.audio_path }}" type="audio/mpeg"></audio>
+                </div>
+                {% endif %}
             </div>
-            {% if diagnosis.audio_path %}
-            <div style="margin-top: 20px;">
-                <p style="margin-bottom: 5px; color: #666;"><strong><i class="fas fa-volume-up"></i> Listen to Advice:</strong></p>
-                <audio controls class="audio-player">
-                    <source src="{{ diagnosis.audio_path }}" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
-            </div>
-            {% endif %}
         </div>
-
         <div class="card">
             <h2><i class="fas fa-chart-pie"></i> Health Statistics (आंकड़े)</h2>
             <div class="stats-container">
                 <div class="stat-box">
-                    <div style="width: 140px; height: 140px; margin: auto;">
-                        <canvas id="healthChart"></canvas>
-                    </div>
-                    <span class="stat-label">AI Confidence</span>
+                    <div style="width: 130px; height: 130px; margin: auto;"><canvas id="healthChart"></canvas></div>
+                    <div style="margin-top: 10px;"><span class="stat-label">AI Confidence</span></div>
                 </div>
-                
                 <div class="stat-box">
-                    <span class="stat-val" style="color: {{ 'red' if data.stats.infection_severity == 'High' else ('orange' if data.stats.infection_severity == 'Medium' else 'green') }};">
-                        {{ data.stats.infection_severity or 'Unknown' }}
-                    </span>
+                    <span class="stat-val" style="color: {{ 'red' if data.stats.infection_severity == 'High' else ('orange' if data.stats.infection_severity == 'Medium' else 'green') }};">{{ data.stats.infection_severity or 'Unknown' }}</span>
                     <span class="stat-label">Severity Level</span>
                 </div>
-
                 <div class="stat-box">
                     <span class="stat-val">{{ data.stats.health_score or 0 }}%</span>
                     <span class="stat-label">Health Score</span>
                 </div>
             </div>
         </div>
-
         <div class="card">
             <h2><i class="fab fa-youtube"></i> Video Remedies (वीडियो उपाय)</h2>
             <ul class="video-list">
                 {% if data.remedies_video_queries %}
                     {% for query in data.remedies_video_queries %}
-                    <li class="video-item">
-                        <i class="fab fa-youtube video-icon"></i>
-                        <a href="https://www.youtube.com/results?search_query={{ query | urlencode }}" target="_blank" class="video-link">
-                            Watch Guide: {{ query }} <i class="fas fa-external-link-alt" style="font-size: 0.8rem;"></i>
-                        </a>
-                    </li>
+                    <li class="video-item"><i class="fab fa-youtube video-icon"></i><a href="https://www.youtube.com/results?search_query={{ query | urlencode }}" target="_blank" class="video-link">Watch Guide: {{ query }} <i class="fas fa-external-link-alt" style="font-size: 0.8rem;"></i></a></li>
                     {% endfor %}
-                {% else %}
-                    <p style="color:#777;">No specific video guides found for this issue.</p>
-                {% endif %}
+                {% else %}<p style="color:#777; font-style: italic;">No specific video guides found.</p>{% endif %}
             </ul>
         </div>
-
         <div class="card">
             <h2><i class="fas fa-shopping-cart"></i> Buy Medicines (दवा खरीदें)</h2>
-            <p style="color:#666; font-size: 0.9rem; margin-bottom: 15px;">Click to find sellers near you:</p>
+            <p style="color:#666; font-size: 0.85rem; margin-bottom: 10px;">Verified sellers near you:</p>
             <div class="product-grid">
                 {% if data.products %}
                     {% for product in data.products %}
                     <a href="https://www.google.com/search?q=buy+{{ product.name | urlencode }}+agriculture+medicine" target="_blank" class="product-card">
-                        <span class="p-type">{{ product.type }}</span>
-                        <div class="p-name">{{ product.name }}</div>
-                        <div class="buy-text">Shop Now <i class="fas fa-chevron-right"></i></div>
+                        <span class="p-type">{{ product.type }}</span><span class="p-name">{{ product.name }}</span><div class="buy-text">Shop Now <i class="fas fa-chevron-right"></i></div>
                     </a>
                     {% endfor %}
-                {% else %}
-                    <p style="color:#777;">No specific commercial products recommended.</p>
-                {% endif %}
+                {% else %}<p style="color:#777; font-style: italic;">No specific products recommended.</p>{% endif %}
             </div>
         </div>
-
     </div>
-
     <script>
         const ctx = document.getElementById('healthChart').getContext('2d');
         const confidence = {{ data.stats.confidence or 0 }};
-        
         new Chart(ctx, {
             type: 'doughnut',
-            data: {
-                labels: ['Confidence', 'Uncertainty'],
-                datasets: [{
-                    data: [confidence, 100 - confidence],
-                    backgroundColor: ['#2e7d32', '#e0e0e0'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                cutout: '70%',
-                responsive: true,
-                plugins: { legend: { display: false }, tooltip: { enabled: false } }
-            },
-            plugins: [{
-                id: 'text',
-                beforeDraw: function(chart) {
-                    var width = chart.width, height = chart.height, ctx = chart.ctx;
-                    ctx.restore();
-                    var fontSize = (height / 114).toFixed(2);
-                    ctx.font = "bold " + fontSize + "em sans-serif";
-                    ctx.textBaseline = "middle";
-                    ctx.fillStyle = "#2e7d32";
-                    var text = confidence + "%",
-                        textX = Math.round((width - ctx.measureText(text).width) / 2),
-                        textY = height / 2;
-                    ctx.fillText(text, textX, textY);
-                    ctx.save();
-                }
-            }]
+            data: { labels: ['Confidence', 'Uncertainty'], datasets: [{ data: [confidence, 100 - confidence], backgroundColor: ['#2e7d32', '#e0e0e0'], borderWidth: 0 }] },
+            options: { cutout: '75%', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } },
+            plugins: [{ id: 'text', beforeDraw: function(chart) {
+                var width = chart.width, height = chart.height, ctx = chart.ctx;
+                ctx.restore();
+                var fontSize = (height / 100).toFixed(2);
+                ctx.font = "bold " + fontSize + "em sans-serif";
+                ctx.textBaseline = "middle";
+                ctx.fillStyle = "#2e7d32";
+                var text = confidence + "%", textX = Math.round((width - ctx.measureText(text).width) / 2), textY = height / 2;
+                ctx.fillText(text, textX, textY);
+                ctx.save();
+            } }]
         });
     </script>
-
 </body>
 </html>
