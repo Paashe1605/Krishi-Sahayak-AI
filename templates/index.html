@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>KisanMitra AI 🌾</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f9f4; text-align: center; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #2e7d32; margin-bottom: 10px; }
+        .logo { font-size: 50px; }
+        
+        /* Form Elements */
+        .input-group { margin: 15px 0; text-align: left; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input[type="file"], select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        
+        /* Voice Input Styling */
+        .voice-box { display: flex; gap: 10px; }
+        textarea { resize: none; height: 60px; }
+        .mic-btn { background: #ff9800; border: none; color: white; padding: 0 15px; border-radius: 8px; cursor: pointer; font-size: 20px; }
+        .mic-btn.listening { background: #f44336; animation: pulse 1s infinite; }
+        
+        /* Main Button */
+        .submit-btn { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .submit-btn:hover { background: #1b5e20; }
+
+        /* Results */
+        #result-area { display: none; margin-top: 25px; text-align: left; background: #e8f5e9; padding: 15px; border-radius: 10px; border: 1px solid #c8e6c9; }
+        #loading { display: none; color: #666; margin-top: 10px; }
+        img.preview { max-width: 100%; border-radius: 10px; margin-top: 10px; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo">🌾</div>
+    <h1>KisanMitra AI</h1>
+    <p>Plant Doctor & Companion</p>
+
+    <form id="diagnoseForm">
+        <div class="input-group">
+            <label>Language (भाषा):</label>
+            <select name="language" id="language">
+                <option value="Hindi">Hindi (हिंदी)</option>
+                <option value="English">English</option>
+                <option value="Marathi">Marathi (मराठी)</option>
+                <option value="Tamil">Tamil (தமிழ்)</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>Upload Photo (फोटो लें):</label>
+            <input type="file" name="image" accept="image/*" required onchange="previewImage(event)">
+            <img id="imgPreview" class="preview" style="display:none;">
+        </div>
+
+        <div class="input-group">
+            <label>Ask a Question (Text or Voice):</label>
+            <div class="voice-box">
+                <textarea name="query" id="queryBox" placeholder="Type here or click mic... (e.g., 'What is this disease?')"></textarea>
+                <button type="button" class="mic-btn" onclick="startDictation()" title="Speak">🎤</button>
+            </div>
+            <small id="micStatus" style="color: #888;">Click mic to speak</small>
+        </div>
+
+        <button type="submit" class="submit-btn">Diagnose (इलाज बतायें)</button>
+    </form>
+
+    <div id="loading">⏳ analyzing plant health... please wait...</div>
+
+    <div id="result-area">
+        <h3>📢 Diagnosis:</h3>
+        <p id="textOutput" style="white-space: pre-wrap;"></p>
+        
+        <h4>🔊 Listen (सुनें):</h4>
+        <audio id="audioPlayer" controls style="width: 100%;"></audio>
+    </div>
+</div>
+
+<script>
+    // --- 1. Voice-to-Text Logic (Web Speech API) ---
+    function startDictation() {
+        if (window.hasOwnProperty('webkitSpeechRecognition')) {
+            var recognition = new webkitSpeechRecognition();
+            var langSelect = document.getElementById('language').value;
+            
+            // Set simplistic language codes for recognition
+            var langMap = {'Hindi': 'hi-IN', 'English': 'en-US', 'Marathi': 'mr-IN', 'Tamil': 'ta-IN'};
+            recognition.lang = langMap[langSelect] || 'en-US';
+            
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onstart = function() {
+                document.querySelector('.mic-btn').classList.add('listening');
+                document.getElementById('micStatus').innerText = "Listening... Speak now.";
+            };
+
+            recognition.onerror = function(e) {
+                document.querySelector('.mic-btn').classList.remove('listening');
+                document.getElementById('micStatus').innerText = "Error: " + e.error;
+            };
+
+            recognition.onend = function() {
+                document.querySelector('.mic-btn').classList.remove('listening');
+                document.getElementById('micStatus').innerText = "Click mic to speak";
+            };
+
+            recognition.onresult = function(e) {
+                document.getElementById('queryBox').value = e.results[0][0].transcript;
+                recognition.stop();
+            };
+
+            recognition.start();
+        } else {
+            alert("Voice input is not supported in this browser. Please use Chrome.");
+        }
+    }
+
+    // --- 2. Image Preview ---
+    function previewImage(event) {
+        var output = document.getElementById('imgPreview');
+        output.src = URL.createObjectURL(event.target.files[0]);
+        output.style.display = 'block';
+    }
+
+    // --- 3. Form Submission (AJAX) ---
+    document.getElementById('diagnoseForm').onsubmit = async function(e) {
+        e.preventDefault();
+        
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('result-area').style.display = 'none';
+
+        var formData = new FormData(this);
+
+        try {
+            let response = await fetch('/diagnose', {
+                method: 'POST',
+                body: formData
+            });
+
+            let data = await response.json();
+
+            document.getElementById('loading').style.display = 'none';
+            
+            if(data.status === 'success') {
+                document.getElementById('result-area').style.display = 'block';
+                document.getElementById('textOutput').innerText = data.diagnosis;
+                
+                let audio = document.getElementById('audioPlayer');
+                audio.src = data.audio_url;
+                audio.play(); // Auto-play the diagnosis
+            } else {
+                alert("Error: " + data.error);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('loading').style.display = 'none';
+            alert("Something went wrong!");
+        }
+    };
+</script>
+
+</body>
+</html>
