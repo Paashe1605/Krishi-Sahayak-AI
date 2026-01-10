@@ -78,8 +78,16 @@ class KisanMitraAgent:
 
     def generate_audio(self, text, language="Hindi"):
         try:
-            lang_codes = {'Hindi': 'hi', 'English': 'en', 'Marathi': 'mr', 'Tamil': 'ta'}
+            # UPDATED: Added Gujarati ('gu') to the dictionary
+            lang_codes = {
+                'Hindi': 'hi', 
+                'English': 'en', 
+                'Marathi': 'mr', 
+                'Tamil': 'ta', 
+                'Gujarati': 'gu'
+            }
             code = lang_codes.get(language, 'hi')
+            
             clean_text = self.clean_text(text) 
             tts = gTTS(text=clean_text, lang=code, slow=False)
             filename = f"response_{uuid.uuid4().hex[:8]}.mp3"
