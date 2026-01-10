@@ -24,12 +24,16 @@ db.init_app(app)
 # Initialize Agent
 agent = None
 try:
-    api_key = os.getenv('GEMINI_API_KEY')
-    agent = KisanMitraAgent(api_key)
-    print("✅ KisanMitra Agent is Active")
+    # UPDATED: Load GCP Project configuration instead of API Key
+    project_id = os.getenv('GOOGLE_CLOUD_PROJECT')
+    location = os.getenv('GOOGLE_CLOUD_LOCATION')
+    
+    # Pass project details to the agent
+    agent = KisanMitraAgent(project_id, location)
+    print("✅ KisanMitra Agent is Active (Vertex AI)")
 except Exception as e:
     print(f"⚠️ Agent Offline: {e}")
-
+    
 @app.route('/')
 def index():
     return render_template('index.html')

@@ -1,52 +1,31 @@
 import os
 import uuid
-import time
 from google import genai
 from PIL import Image
 from gtts import gTTS
 
 class KisanMitraAgent:
-    def __init__(self, api_key):
-        if not api_key:
-            raise ValueError("API Key is missing.")
+    def __init__(self, project_id, location):
+        if not project_id or not location:
+            raise ValueError("GCP Project ID or Location is missing.")
         
-        # Initialize Gemini Client
-        self.client = genai.Client(api_key=api_key)
-        
-        # --- AUTO-DISCOVERY MAGIC (From Miyavkify) ---
-        print("🔄 Asking Google for available models...")
-        self.model_name = self._find_best_model()
-        print(f"✅ KisanMitra Agent initialized using: {self.model_name}")
-
-    def _find_best_model(self):
-        """
-        Asks Google which models are available and picks the best 'Flash' model.
-        """
+        # --- VERTEX AI INITIALIZATION ---
+        print(f"🔄 Connecting to Vertex AI (Project: {project_id}, Region: {location})...")
         try:
-            # 1. Ask Google for list of models
-            available_models = self.client.models.list()
-            model_names = [m.name for m in available_models]
+            self.client = genai.Client(
+                vertexai=True, 
+                project=project_id, 
+                location=location
+            )
             
-            # 2. Look for 'Flash' (Fastest for images)
-            for name in model_names:
-                if "flash" in name.lower() and "exp" not in name.lower() and "8b" in name.lower():
-                    return name  # Best: Flash 8b (Super fast)
-            
-            for name in model_names:
-                if "flash" in name.lower() and "exp" not in name.lower():
-                    return name  # Good: Standard Flash
-            
-            # 3. Fallback to Pro if Flash is missing
-            for name in model_names:
-                if "pro" in name.lower() and "vision" not in name.lower():
-                    return name
-            
-            # 4. Absolute Fallback
-            return "gemini-1.5-flash"
+            # --- MODEL SELECTION ---
+            # Using the specific stable version for 2026
+            self.model_name = "gemini-2.5-flash"
+            print(f"✅ KisanMitra Agent initialized using: {self.model_name}")
             
         except Exception as e:
-            print(f"⚠️ Model Discovery Failed: {e}. Using default.")
-            return "gemini-1.5-flash"
+            print(f"❌ Failed to initialize Vertex AI Client: {e}")
+            raise e
 
     def analyze_crop(self, image_path, user_query=None, language="Hindi"):
         """
@@ -68,7 +47,7 @@ class KisanMitraAgent:
             Language Requested: {language}
             
             TASK:
-            1. Analyze the image. identify the crop and the disease/pest.(Note have clean and highly relevant dataset/data source to identify the disease/pest)
+            1. Analyze the image. identify the crop and the disease/pest.
             2. If no disease is visible, say "The plant looks healthy."
             3. Suggest a CURE:
                - First: An Organic/Home remedy (low cost).
@@ -81,7 +60,7 @@ class KisanMitraAgent:
             Do not use complex formatting (no markdown tables), as this will be spoken out loud.
             """
 
-            # Call Gemini using the Auto-Discovered Model
+            # Call Vertex AI
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=[prompt, pil_image]
@@ -90,11 +69,12 @@ class KisanMitraAgent:
             return response.text if response else "Error: AI could not diagnose."
 
         except Exception as e:
+            print(f"Analysis Error: {e}")
             return f"Error in analysis: {str(e)}"
 
     def generate_audio(self, text, language="Hindi"):
         """
-        Converts the text diagnosis into an MP3 file.
+        Converts the text diagnosis into an MP3 file using gTTS.
         """
         try:
             lang_codes = {'Hindi': 'hi', 'English': 'en', 'Marathi': 'mr', 'Tamil': 'ta'}
