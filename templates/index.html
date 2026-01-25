@@ -3,184 +3,148 @@
 <head>
     <title>KisanMitra AI 🌾</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f9f4; text-align: center; padding: 20px; color: #333; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(46, 125, 50, 0.1); }
-        h1 { color: #2e7d32; margin-bottom: 5px; font-weight: 700; }
-        .subtitle { color: #666; margin-bottom: 25px; font-size: 0.95rem; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f9f4; text-align: center; padding: 20px; margin: 0; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #2e7d32; margin-bottom: 5px; }
         .logo { font-size: 60px; display: block; margin-bottom: 10px; }
         
-        /* Form Elements */
+        /* Input Groups */
         .input-group { margin: 20px 0; text-align: left; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; font-size: 0.9rem; }
-        input[type="file"], select, textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 12px; box-sizing: border-box; font-family: inherit; transition: 0.3s; }
-        input[type="file"]:focus, select:focus, textarea:focus { border-color: #2e7d32; outline: none; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #444; }
+        input[type="file"], select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         
-        /* Voice Input */
+        /* Voice Box */
         .voice-box { display: flex; gap: 10px; }
-        textarea { resize: none; height: 70px; }
-        .mic-btn { background: #ff9800; border: none; color: white; padding: 0 20px; border-radius: 12px; cursor: pointer; font-size: 22px; transition: 0.2s; }
-        .mic-btn:hover { background: #f57c00; }
-        .mic-btn.listening { background: #f44336; animation: micPulse 1.5s infinite; }
+        .mic-btn { background: #ff9800; border: none; color: white; padding: 0 20px; border-radius: 8px; cursor: pointer; font-size: 20px; transition: 0.3s; }
         
-        /* Main Button */
-        .submit-btn { background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%); color: white; border: none; padding: 16px; width: 100%; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3); transition: transform 0.2s; }
-        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4); }
+        /* --- NEW: Active Listening Style (Red + Pulse) --- */
+        .mic-active {
+            background-color: #f44336 !important; /* Red color */
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+        }
+        
+        /* Action Buttons */
+        .btn-row { display: flex; gap: 10px; margin-top: 5px; }
+        .camera-btn { flex: 1; background: #2196F3; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .camera-btn:hover { background: #1976D2; }
+        
+        /* Submit Button */
+        .submit-btn { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .submit-btn:hover { background: #1b5e20; transform: scale(1.02); }
 
+        /* --- UPDATED: Breathing Loading Overlay --- */
+        
         /* --- BREATHE LOADER (Inhale/Exhale) --- */
-        #loading { display: none; margin-top: 40px; text-align: center; }
+       #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; }
         
-        .breathe-container {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            margin: 0 auto 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .leaf-icon {
-            font-size: 40px;
-            z-index: 2;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .breathe-ring {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background-color: rgba(76, 175, 80, 0.2);
-            z-index: 1;
-            animation: breathe 4s ease-in-out infinite;
+        .breathing-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: breathe 2s ease-in-out infinite;
         }
         
-        .breathe-ring:nth-child(2) { animation-delay: 0.5s; background-color: rgba(76, 175, 80, 0.15); }
-        .breathe-ring:nth-child(3) { animation-delay: 1s; background-color: rgba(76, 175, 80, 0.1); }
-
-        .loading-text { color: #2e7d32; font-weight: 600; font-size: 1.1rem; letter-spacing: 0.5px; animation: textFade 2s ease-in-out infinite; }
-        .loading-sub { color: #888; font-size: 0.85rem; margin-top: 5px; }
-
-        /* Animations */
         @keyframes breathe {
-            0% { transform: scale(0.8); opacity: 0.3; } 
-            50% { transform: scale(1.3); opacity: 0.8; box-shadow: 0 0 30px rgba(46, 125, 50, 0.2); } 
-            100% { transform: scale(0.8); opacity: 0.3; } 
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
         }
-
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        @keyframes textFade { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
-        @keyframes micPulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        
-        img.preview { max-width: 100%; border-radius: 12px; margin-top: 15px; border: 2px solid #eee; display: none; }
+        /* Camera Modal */
+        #camera-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 2000; flex-direction: column; align-items: center; justify-content: center; }
+        #camera-feed { width: 100%; max-width: 600px; height: auto; border-radius: 10px; }
+        .camera-controls { margin-top: 20px; display: flex; gap: 20px; }
+        .snap-btn { background: white; border: 5px solid #ddd; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; }
+        .close-camera { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; }
     </style>
 </head>
 <body>
 
+<div id="loading-overlay">
+    <div class="breathing-icon">🌾</div>
+    <h3 style="color: #2e7d32; margin-top: 10px;">Analyzing Crop Health...</h3>
+    <p>Please wait while KisanMitra AI diagnoses the issue.</p>
+</div>
+
+<div id="camera-modal">
+    <span class="close-camera" onclick="stopCamera()">&times;</span>
+    <video id="camera-feed" autoplay playsinline></video>
+    <canvas id="camera-canvas" style="display:none;"></canvas>
+    <div class="camera-controls">
+        <button class="snap-btn" onclick="takeSnapshot()"></button>
+    </div>
+    <p style="color: white; margin-top: 10px;">Click circle to capture</p>
+</div>
+
 <div class="container">
-    <span class="logo">🌾</span>
+    <div class="logo">🌾</div>
     <h1>KisanMitra AI</h1>
-    <p class="subtitle">Your Expert Plant Doctor & Companion</p>
+    <p style="color: #666;">Your Personal Plant Doctor</p>
 
     <form id="diagnoseForm">
         <div class="input-group">
-            <label>Language (भाषा):</label>
+            <label><i class="fas fa-language"></i> Language (भाषा):</label>
             <select name="language" id="language">
                 <option value="Hindi">Hindi (हिंदी)</option>
                 <option value="English">English</option>
                 <option value="Marathi">Marathi (मराठी)</option>
                 <option value="Tamil">Tamil (தமிழ்)</option>
                 <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+                <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
+                <option value="Telugu">Telugu (తెలుగు)</option>
+                <option value="Bengali">Bengali (বাংলা)</option>
+                <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
+                <option value="Malayalam">Malayalam (മലയാളം)</option>
+                <option value="Odia">Odia (ଓଡ଼ିଆ)</option>
+                <option value="Assamese">Assamese (অসমীয়া)</option>
+                <option value="Rajasthani">Rajasthani (राजस्थानी)</option>
+                <option value="Kashmiri">Kashmiri (کٲشمی)</option>
             </select>
         </div>
 
         <div class="input-group">
-            <label>Upload Photo (फोटो लें):</label>
-            <input type="file" name="image" accept="image/*" required onchange="previewImage(event)">
-            <img id="imgPreview" class="preview">
+            <label><i class="fas fa-camera"></i> Upload Photo (फोटो लें):</label>
+            
+            <input type="file" name="image" id="fileInput" accept="image/*" onchange="previewImage(event)">
+            
+            <div class="btn-row">
+                <button type="button" class="camera-btn" onclick="startCamera()">
+                    <i class="fas fa-camera"></i> Use Camera
+                </button>
+            </div>
+
+            <img id="imgPreview" style="display:none; width: 100%; margin-top: 10px; border-radius: 10px; border: 2px solid #eee;">
         </div>
 
         <div class="input-group">
-            <label>Ask a Question (Text or Voice):</label>
+            <label><i class="fas fa-comment-medical"></i> Describe Issue (समस्या बताएं):</label>
             <div class="voice-box">
-                <textarea name="query" id="queryBox" placeholder="Type here or click mic... (e.g., 'My tomato leaves are turning yellow')"></textarea>
-                <button type="button" class="mic-btn" onclick="startDictation()" title="Speak">🎤</button>
+                <textarea name="query" id="queryBox" placeholder="Optional: E.g., 'Leaves are turning yellow'"></textarea>
+                <button type="button" class="mic-btn" id="micBtn" onclick="startDictation()">🎤</button>
             </div>
-            <small id="micStatus" style="color: #888; margin-top:5px; display:block;">Click mic to speak</small>
         </div>
 
-        <button type="submit" class="submit-btn">Diagnose Now (इलाज बतायें)</button>
+        <button type="submit" class="submit-btn">Get Diagnosis Report (रिपोर्ट देखें)</button>
     </form>
-
-    <div id="loading">
-        <div class="breathe-container">
-            <div class="breathe-ring"></div>
-            <div class="breathe-ring"></div>
-            <div class="leaf-icon">🌿</div>
-        </div>
-        <div class="loading-text">Analyzing Plant Health...</div>
-        <div class="loading-sub">Connecting to Agronomist AI...</div>
-    </div>
-
 </div>
 
 <script>
-    // --- 1. Voice-to-Text Logic ---
-    function startDictation() {
-        if (window.hasOwnProperty('webkitSpeechRecognition')) {
-            var recognition = new webkitSpeechRecognition();
-            var langSelect = document.getElementById('language').value;
-            
-            // UPDATED: Added Gujarati ('gu-IN') to the map
-            var langMap = {
-                'Hindi': 'hi-IN', 
-                'English': 'en-US', 
-                'Marathi': 'mr-IN', 
-                'Tamil': 'ta-IN',
-                'Gujarati': 'gu-IN' 
-            };
-            
-            recognition.lang = langMap[langSelect] || 'en-US';
-            recognition.continuous = false;
-            recognition.interimResults = false;
-
-            recognition.onstart = function() {
-                document.querySelector('.mic-btn').classList.add('listening');
-                document.getElementById('micStatus').innerText = "Listening... Speak now.";
-            };
-            recognition.onerror = function(e) {
-                document.querySelector('.mic-btn').classList.remove('listening');
-                document.getElementById('micStatus').innerText = "Error: " + e.error;
-            };
-            recognition.onend = function() {
-                document.querySelector('.mic-btn').classList.remove('listening');
-                document.getElementById('micStatus').innerText = "Click mic to speak";
-            };
-            recognition.onresult = function(e) {
-                document.getElementById('queryBox').value = e.results[0][0].transcript;
-                recognition.stop();
-            };
-            recognition.start();
-        } else {
-            alert("Voice input is not supported in this browser. Please use Chrome.");
-        }
-    }
-
-    // --- 2. Image Preview ---
-    function previewImage(event) {
-        var output = document.getElementById('imgPreview');
-        output.src = URL.createObjectURL(event.target.files[0]);
-        output.style.display = 'block';
-    }
-
-    // --- 3. Form Submission (AJAX + Redirect) ---
+    // --- 1. Form Submission (Handles JSON Redirect) ---
     document.getElementById('diagnoseForm').onsubmit = async function(e) {
         e.preventDefault();
         
-        // Hide form, Show Breathe Loader
-        document.getElementById('diagnoseForm').style.display = 'none';
-        document.getElementById('loading').style.display = 'block';
+        let fileInput = document.getElementById('fileInput');
+        if (!fileInput.files.length) {
+            alert("Please select or capture an image first!");
+            return;
+        }
+
+        document.getElementById('loading-overlay').style.display = 'flex';
         
         var formData = new FormData(this);
 
@@ -192,23 +156,112 @@
 
             let data = await response.json();
 
-            if(data.status === 'success' && data.redirect_url) {
-                // Success: Redirect to Result Page
+            if (data.status === 'success' && data.redirect_url) {
                 window.location.href = data.redirect_url;
             } else {
-                // Error: Restore form
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('diagnoseForm').style.display = 'block';
+                document.getElementById('loading-overlay').style.display = 'none';
                 alert("Error: " + (data.error || "Unknown error"));
             }
         } catch (error) {
             console.error('Error:', error);
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('diagnoseForm').style.display = 'block';
-            alert("Connection error!");
+            document.getElementById('loading-overlay').style.display = 'none';
+            alert("Something went wrong with the server connection.");
         }
     };
-</script>
 
+    // --- 2. Camera Logic ---
+    let videoStream = null;
+
+    async function startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "environment" } 
+            });
+            videoStream = stream;
+            
+            const video = document.getElementById('camera-feed');
+            video.srcObject = stream;
+            
+            document.getElementById('camera-modal').style.display = 'flex';
+        } catch (err) {
+            alert("Could not access camera: " + err);
+        }
+    }
+
+    function stopCamera() {
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+            videoStream = null;
+        }
+        document.getElementById('camera-modal').style.display = 'none';
+    }
+
+    function takeSnapshot() {
+        const video = document.getElementById('camera-feed');
+        const canvas = document.getElementById('camera-canvas');
+        const context = canvas.getContext('2d');
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        canvas.toBlob((blob) => {
+            const file = new File([blob], "camera_capture.jpg", { type: "image/jpeg" });
+            
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            document.getElementById('fileInput').files = dataTransfer.files;
+
+            const preview = document.getElementById('imgPreview');
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = 'block';
+
+            stopCamera();
+        }, 'image/jpeg');
+    }
+
+    function previewImage(event) {
+        var output = document.getElementById('imgPreview');
+        if (event.target.files && event.target.files[0]) {
+            output.src = URL.createObjectURL(event.target.files[0]);
+            output.style.display = 'block';
+        }
+    }
+
+    // --- 3. Voice Logic (UPDATED: Adds Red 'Listening' Effect) ---
+    function startDictation() {
+        if (window.hasOwnProperty('webkitSpeechRecognition')) {
+            var recognition = new webkitSpeechRecognition();
+            var langCodes = {'Hindi': 'hi-IN', 'English': 'en-US', 'Marathi': 'mr-IN', 'Gujarati': 'gu-IN', 'Tamil': 'ta-IN', 'Kannada': 'kn-IN', 'Telugu': 'te-IN', 'Bengali': 'bn-IN', 'Punjabi': 'pa-IN', 'Malayalam': 'ml-IN', 'Odia': 'or-IN', 'Assamese': 'as-IN','Rajasthani': 'hi-IN', 'Kashmiri': 'ks-IN'};
+            recognition.lang = langCodes[document.getElementById('language').value] || 'en-US';
+            
+            var micBtn = document.getElementById('micBtn');
+
+            // START: Turn Red & Pulse
+            recognition.onstart = function() {
+                micBtn.classList.add('mic-active');
+            };
+
+            recognition.onresult = function(e) {
+                document.getElementById('queryBox').value = e.results[0][0].transcript;
+                micBtn.classList.remove('mic-active'); // Stop Red Effect
+            };
+
+            recognition.onerror = function(e) {
+                micBtn.classList.remove('mic-active'); // Stop Red Effect on error
+            };
+
+            recognition.onend = function() {
+                micBtn.classList.remove('mic-active'); // Stop Red Effect when done
+            };
+
+            recognition.start();
+        } else {
+            alert("Voice input requires Chrome browser.");
+        }
+    }
+</script>
+<p>&copy; 2026 KisanMitra AI. All Rights Reserved.</p>
 </body>
 </html>

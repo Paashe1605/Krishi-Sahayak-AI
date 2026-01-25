@@ -97,54 +97,6 @@ KisanMitra/
 
 ---
 
-## 💻 Local Installation Guide
-
-Want to run this project on your own machine? Follow these steps:
-
-**1. Clone the Repository**
-
-```bash
-git clone [https://github.com/Paashe1605/KisanMitra.git](https://github.com/Paashe1605/KisanMitra.git)
-cd KisanMitra
-
-```
-
-**2. Create a Virtual Environment**
-
-```bash
-python -m venv venv
-# Windows
-venv\Scripts\activate
-# Mac/Linux
-source venv/bin/activate
-
-```
-
-**3. Install Dependencies**
-
-```bash
-pip install -r requirements.txt
-
-```
-
-**4. Set Up Environment Variables**
-Create a file named `.env` in the root folder and add your Google Gemini API Key:
-
-```env
-GOOGLE_CLOUD_PROJECT=your_cloud_project_id_here
-GOOGLE_CLOUD_LOCATION=us-central1
-```
-
-**5. Run the Application**
-
-```bash
-python app.py
-
-```
-
-Open your browser and visit: `http://127.0.0.1:5000`
-
----
 
 ## 🚀 Deployment
 
@@ -154,6 +106,8 @@ This project is deployed on **Render** using a Gunicorn server.
 * **Build Command:** `pip install -r requirements.txt`
 * **Start Command:** `gunicorn app:app`
 * **Environment Variables:** `Cloud json api file and the .env variables set in Render dashboard.
+
+**🌐 Live App:** [https://kisanmitra-app.onrender.com](https://kisanmitra-app.onrender.com)
 
 ---
 
@@ -173,7 +127,13 @@ This project is deployed on **Render** using a Gunicorn server.
 
 ---
 
-Made with ❤️ for Indian Farmers & Agri Buisness Owners🌾@ AUTONOMOUS HACKS 2026
+Made with ❤️ for Indian Farmers & Agri Buisness Owners 🌾.
+
+## License & Copyright
+
+© 2026 Paaras Shemrudkar,Prachi Sharma. All rights reserved.
+
+This project is proprietary software. It is not open source. You may not use, copy, modify, or distribute the code in this repository without express written permission from the owner.
 
 ```
 
