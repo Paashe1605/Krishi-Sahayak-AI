@@ -59,9 +59,7 @@ class KisanMitraAgent:
             
             The JSON structure must be:
             {{
-                "diagnosis": "Start with [Plant] : [Disease]. Follow with 'Evidence:' explaining the visual logic (e.g. 'Asymmetrical spots rule out Zinc deficiency'). 
-                 Then list 1. ORGANIC and 2. CHEMICAL remedies. The above response must be detailed and point wise, with proper formatting, spacing and justified, also provide the symptoms and solutions in a clear, step-by-step list format (use '•' for bullets).
-                 Make it detailed but easy to read. Highlight key points and words.",
+                "diagnosis": "Start with [Plant] : [Disease]. Follow with 'Evidence:' explaining the visual logic (e.g. 'Asymmetrical spots rule out Zinc deficiency'). Then list 1. ORGANIC and 2. CHEMICAL remedies. The above response must be detailed and point wise, with proper formatting, spacing and justified, also provide the symptoms and solutions in a clear, step-by-step list format (use '•' for bullets).Make it detailed but easy to read. Highlight key points and words.",
                 "audio_script": "A short, warm, conversational summary for text-to-speech (max 3 sentences). Start with proper salutation to the farmer, mention the disease and the best organic cure and optional chemical remedy.",
                 "stats": {{
                     "health_score": (integer 0-100),
