@@ -35,69 +35,49 @@ def index():
 
 @app.route('/diagnose', methods=['POST'])
 def diagnose():
-    """Handles Image + Text/Voice Query and returns redirect URL"""
-    if 'image' not in request.files:
-        return jsonify({'error': 'No image uploaded'}), 400
-    
+    if 'image' not in request.files: return jsonify({'error': 'No image provided'}), 400
     file = request.files['image']
     user_query = request.form.get('query', '')
     language = request.form.get('language', 'Hindi')
+    location = request.form.get('location', 'India') 
 
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'}), 400
+    if file.filename == '': return jsonify({'error': 'No file selected'}), 400
 
     if file:
         filename = secure_filename(f"{uuid.uuid4().hex[:8]}_{file.filename}")
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
-        if not agent:
-            return jsonify({'error': 'AI Agent configuration error.'}), 500
+        if not agent: return jsonify({'error': 'AI Agent is offline'}), 500
 
-        # 1. Get Structured Analysis (JSON Dictionary)
-        analysis_data = agent.analyze_crop(filepath, user_query, language)
-
-        # 2. Generate Audio (Use the concise audio script)
-        audio_text = analysis_data.get('audio_script', analysis_data.get('diagnosis'))
+        analysis_data = agent.analyze_crop(filepath, user_query, language, location)
+        
+        audio_text = analysis_data.get('audio_script', 'Diagnosis complete.')
         audio_url = agent.generate_audio(audio_text, language)
 
-        # 3. Save to DB (Store JSON as string in ai_diagnosis column)
         new_diagnosis = Diagnosis(
             image_filename=filename,
             user_query=user_query,
-            ai_diagnosis=json.dumps(analysis_data), # Serialize JSON to string
+            ai_diagnosis=json.dumps(analysis_data), 
             audio_path=audio_url
         )
         db.session.add(new_diagnosis)
         db.session.commit()
 
-        # 4. Return Redirect URL to the new result page
-        return jsonify({
-            'status': 'success',
-            'redirect_url': url_for('show_result', result_id=new_diagnosis.id)
-        })
+        return jsonify({'status': 'success', 'redirect_url': url_for('show_result', result_id=new_diagnosis.id)})
 
 @app.route('/result/<int:result_id>')
 def show_result(result_id):
-    """Render the 2x2 grid result page"""
     diagnosis_record = db.session.get(Diagnosis, result_id)
-    if not diagnosis_record:
-        return "Diagnosis not found", 404
-    
-    # Parse the stored JSON string back to a Python Dictionary
+    if not diagnosis_record: return "Diagnosis not found", 404
     try:
         data = json.loads(diagnosis_record.ai_diagnosis)
     except:
-        # Fallback for old/legacy text data
-        data = {"diagnosis": diagnosis_record.ai_diagnosis, "stats": {}, "remedies_video_queries": [], "products": []}
+        # Robust fallback
+        data = { "diagnosis": "Error loading data", "stats": {"health_score":0}, "products": [], "expert_contacts": [], "cost_risk_analysis": {} }
     
-    return render_template('result.html', 
-                           diagnosis=diagnosis_record, 
-                           data=data)
+    return render_template('result.html', diagnosis=diagnosis_record, data=data)
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
+    with app.app_context(): db.create_all()
     app.run(debug=True, port=5000)
-
-    # © 2026 KisanMitra AI. All Rights Reserved.

@@ -2,13 +2,23 @@ import os
 import uuid
 import json
 import re
-import edge_tts
 import asyncio
 from google import genai
 from google.genai import types
 from PIL import Image
 from gtts import gTTS
+import edge_tts
 
+# --- Helper to run async EdgeTTS in sync code ---
+def run_async_tts(coro):
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            return asyncio.run_coroutine_threadsafe(coro, loop).result()
+        else:
+            return loop.run_until_complete(coro)
+    except RuntimeError:
+        return asyncio.run(coro)
 
 class KisanMitraAgent:
     def __init__(self, project_id, location):
@@ -26,185 +36,183 @@ class KisanMitraAgent:
 
     def clean_text(self, text):
         if not text: return ""
-        # Remove bolding, headers, and links for cleaner reading/TTS
         clean = re.sub(r'\*\*|__', '', text) 
         clean = re.sub(r'#+', '', clean)
         clean = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', clean)
         clean = re.sub(r'^\*\s', '• ', clean, flags=re.MULTILINE) 
         return clean.strip()
 
-    def analyze_crop(self, image_path, user_query=None, language="Hindi"):
+    def clean_json_output(self, raw_text):
+        """
+        Robustly extracts JSON, handling comments and markdown artifacts.
+        """
+        if not raw_text: return None
+        try:
+            # 1. Remove code block markers
+            text = re.sub(r'```json\s*', '', raw_text)
+            text = re.sub(r'```\s*', '', text)
+            
+            # 2. Remove C++ style comments // which break JSON parsers
+            text = re.sub(r'//.*', '', text)
+            
+            # 3. Find the first { and the last }
+            start = text.find('{')
+            end = text.rfind('}') + 1
+            if start != -1 and end != -1:
+                json_str = text[start:end]
+                return json.loads(json_str)
+            
+            return None
+        except Exception as e:
+            print(f"⚠️ JSON Parse Error: {e}")
+            # print(f"📄 Raw Text causing error: {raw_text}") # Uncomment to debug
+            return None
+
+    def get_fallback_data(self, error_msg):
+        return {
+            "diagnosis": f"⚠️ Analysis error: {error_msg}. Please try again.",
+            "audio_script": "An error occurred.",
+            "stats": { "health_score": 0, "infection_severity": "Error", "confidence": 0 },
+            "remedies_video_queries": [],
+            "products": [],
+            "expert_contacts": [],
+            "cost_risk_analysis": {
+                "organic": {"cost": "-", "risk": "-", "timeline": "-"},
+                "chemical": {"cost": "-", "risk": "-", "timeline": "-"}
+            }
+        }
+
+    def _call_ai_model(self, prompt, pil_image, use_search=False):
+        """Internal helper to call AI with or without search tools."""
+        config_args = {'temperature': 0.4}
+        
+        if use_search:
+            config_args['tools'] = [types.Tool(google_search=types.GoogleSearch())]
+        else:
+            # Enforce JSON when not searching
+            config_args['response_mime_type'] = 'application/json'
+
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=[prompt, pil_image],
+            config=types.GenerateContentConfig(**config_args)
+        )
+        return response.text if response else "{}"
+
+    def analyze_crop(self, image_path, user_query=None, language="Hindi", location="India"):
         try:
             pil_image = Image.open(image_path)
             if not user_query: user_query = "What is wrong with my plant?"
 
-            prompt = f"""
-            You are 'KisanMitra', an elite Agronomist and expert Forensic Plant Pathologist who provides very accurate diagnoses.
+            base_prompt = f"""
+             You are 'KisanMitra', an expert Forensic Plant Pathologist and Agricultural Market Analyst as well as an Agronomist who provides best results.
             
             User Query: "{user_query}"
             Language: {language}
+            Location: {location}
             
-            ***FORENSIC VISUAL PROTOCOL (Perform this internally):***
-            1. SYMMETRY CHECK: Asymmetrical spots = Virus/Fungi. Symmetrical = Deficiency.
-            2. VEIN CHECK: Green veins + Yellow leaf = Nutrient Deficiency.
-            3. ROOT CHECK: If Wilting + Green Leaves, suspect Root Rot/Wilt (not just drought).
-            
-            Use the 'google_search' tool to verify if there are active disease outbreaks and latest remedies for this crop in the user's region (if known) or generally in 2025-2026.
-            Use the 'google_search' tool to cross check the image, whole diagnosis and remedies with latest agricultural advisories and organic treatments.'
-
             TASK:
-            1. Analyze the image and Search Results properly, take assistance from 'google_search' tool if needed, for accurate results.
-            2. Return a VALID JSON object. DO NOT use Markdown formatting.
-            3. PROVIDE CURES: Prioritize ORGANIC/HOME remedies first.
+            1. **Forensic Diagnosis:** Identify crop, disease, pathogen lifecycle, and specific visual symptoms properly.
+            2. **Cures:** Provide multiple(Minimum 4) disease specific Organic (Priority) and Chemical remedies.
+            3. **Local Intelligence:** Provide realistic details for KVK/Agri Officers in all major villages, districts,and cities.{location}.
+            4. **Market Analysis:** Properly compare Costs vs Risk with accuracy and figures.
             
-            The JSON structure must be:
+            CRITICAL OUTPUT INSTRUCTION: 
+            Return ONLY a valid JSON object. 
+            Translate ALL strings to {language}. 
+            Translate Numbers (e.g. "50%" -> "५०%", "Cost: Low" -> "लागत: कम").
+            
+            JSON Structure:
             {{
-                "diagnosis": "Start with [Plant] : [Disease]. Follow with 'Evidence:' explaining the visual logic (e.g. 'Asymmetrical spots rule out Zinc deficiency'). Then list 1. ORGANIC and 2. CHEMICAL remedies. The above response must be detailed and point wise, with proper formatting, spacing and justified, also provide the symptoms and solutions in a clear, step-by-step list format (use '•' for bullets).Make it detailed but easy to read. Highlight key points and words.",
-                "audio_script": "A short, warm, conversational summary for text-to-speech (max 3 sentences). Start with proper salutation to the farmer, mention the disease and the best organic cure and optional chemical remedy.",
-                "stats": {{
-                    "health_score": (integer 0-100),
-                    "infection_severity": "Low/Medium/High",
-                    "confidence": (integer 0-100)
+                "diagnosis": "Detailed diagnosis in proper point wise format {language}. Include Symptoms and best organic & chemical remedies {language}.",
+                "audio_script": "Best possible proper conversational summary and also refer user(farmer) to see the related Youtube Video and Experts Contacts in the below sections in {language} (max 3 sentences)(Begin with proper salutation).",
+                "stats": {{ 
+                    "health_score": "Integer (0-100)", 
+                    "infection_severity": "Low/Medium/High (Translated)", 
+                    "confidence": "Integer (0-100)" 
                 }},
-                "remedies_video_queries": [ "Specific YouTube search query 1", "Specific YouTube search query 2" ],
+                "remedies_video_queries": ["Query 1", "Query 2", "Query 3", "Query 4"],
                 "products": [ 
-                    {{ "name": "Name of ORGANIC product (e.g. Neem Oil)", "type": "Organic" }},
-                    {{ "name": "Name of ORGANIC product", "type": "Organic" }},
-                    {{ "name": "Name of Chemical product", "type": "Chemical" }}
-                ]
+                    {{ "name": "Organic Product Name", "type": "Organic" }},
+                    {{ "name": "Chemical Product Name", "type": "Chemical" }}
+                ],
+                "expert_contacts": [
+                    {{ "name": "KVK/Officer Name", "role": "Role", "contact": "Phone", "location": "City" }},
+                    {{ "name": "Kisan Call Center", "role": "Helpline", "contact": "1800-180-1551", "location": "National" }}
+                ],
+                "cost_risk_analysis": {{
+                    "organic": {{ "cost": "Low/Medium", "risk": "Safe", "timeline": "Weeks" }},
+                    "chemical": {{ "cost": "High", "risk": "Toxic", "timeline": "Days" }}
+                }}
             }}
             """
 
-            # --- FIXED CONFIGURATION ---
-            # REMOVED 'response_mime_type' to fix the 400 Error.
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=[prompt, pil_image],
-                config=types.GenerateContentConfig(
-                    tools=[types.Tool(google_search=types.GoogleSearch())],
-                    temperature=0.4  # Low temperature helps keep JSON structure stable
-                )
-            )
-            
-            raw_text = response.text if response else "{}"
-            
-            # --- ROBUST JSON CLEANUP ---
-            # The model might wrap the JSON in ```json ... ``` blocks. We must strip them.
-            raw_text = raw_text.strip()
-            if raw_text.startswith("```json"):
-                raw_text = raw_text[7:]
-            if raw_text.startswith("```"):
-                raw_text = raw_text[3:]
-            if raw_text.endswith("```"):
-                raw_text = raw_text[:-3]
-            
-            raw_text = raw_text.strip() # Final trim
-
+            # --- ATTEMPT 1: SEARCH ---
+            print("🔍 Attempting Analysis WITH Google Search...")
             try:
-                data = json.loads(raw_text)
-                data['diagnosis'] = self.clean_text(data.get('diagnosis', 'Could not diagnose.'))
+                # We specifically ask NOT to include citations in the JSON to avoid breaking it
+                search_prompt = base_prompt + " Use Google Search for real-time info like Use Google Search to find Products(medicines) & current market prices for medicines and actual contact numbers for KVKs and verify diagnosis. Do NOT include markdown citations or comments in the JSON."
+                raw_text = self._call_ai_model(search_prompt, pil_image, use_search=True)
+                
+                data = self.clean_json_output(raw_text)
+                if data and "diagnosis" in data:
+                    print("✅ Search Analysis Successful.")
+                    data['diagnosis'] = self.clean_text(data.get('diagnosis', ''))
+                    return data
+                else:
+                    print("⚠️ Search result was not valid JSON. Falling back...")
+            except Exception as e:
+                print(f"⚠️ Search failed ({e}). Falling back...")
+
+            # --- ATTEMPT 2: FALLBACK ---
+            print("🔄 Retrying WITHOUT Search (Standard Analysis)...")
+            fallback_prompt = base_prompt + " Use internal knowledge."
+            raw_text = self._call_ai_model(fallback_prompt, pil_image, use_search=False)
+            
+            data = self.clean_json_output(raw_text)
+            if data:
+                data['diagnosis'] = self.clean_text(data.get('diagnosis', ''))
                 return data
-            except json.JSONDecodeError:
-                # Fallback if the model returns plain text instead of JSON
-                print(f"JSON Parse Failed. Raw Text: {raw_text}")
-                return { 
-                    "diagnosis": self.clean_text(raw_text), 
-                    "audio_script": "I could not generate a structured report, but here is my analysis.", 
-                    "stats": {}, 
-                    "remedies_video_queries": [], 
-                    "products": [] 
-                }
+            
+            return self.get_fallback_data("Analysis failed.")
 
         except Exception as e:
-            print(f"Analysis Error: {e}")
-            return { "diagnosis": f"Error: {str(e)}", "audio_script": "Error.", "stats": {}, "remedies_video_queries": [], "products": [] }
+            print(f"❌ Critical Error: {e}")
+            return self.get_fallback_data(str(e))
 
-   # --- ROBUST HYBRID AUDIO ENGINE (3-Layer Safety) ---
     def generate_audio(self, text, language="Hindi"):
-        filename = f"response_{uuid.uuid4().hex[:8]}.mp3"
-        save_path = os.path.join("static", "audio", filename)
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        
-        clean_text = self.clean_text(text)
-
-        # 1. Map for Edge-TTS (High Quality)
-        edge_voice_map = {
-            'Hindi': 'hi-IN-SwaraNeural',
-            'English': 'en-IN-NeerjaNeural',
-            'Marathi': 'mr-IN-AarohiNeural',
-            'Tamil': 'ta-IN-PallaviNeural',
-            'Gujarati': 'gu-IN-DhwaniNeural',
-            'Kannada': 'kn-IN-SapnaNeural',
-            'Telugu': 'te-IN-ShrutiNeural',
-            'Bengali': 'bn-IN-TanishaaNeural',
-            'Malayalam': 'ml-IN-SobhanaNeural',
-            'Punjabi': 'pa-IN-OjasNeural',
-            'Odia': 'or-IN-SubhasiniNeural'
-        }
-
-        # 2. Map for Google TTS (Standard Quality) - COVERS EVERYTHING
-        gtts_code_map = {
-            'Hindi': 'hi',
-            'English': 'en',
-            'Marathi': 'mr',
-            'Tamil': 'ta',
-            'Gujarati': 'gu',
-            'Kannada': 'kn',
-            'Telugu': 'te',
-            'Bengali': 'bn',
-            'Punjabi': 'pa',     # Google supports this!
-            'Malayalam': 'ml',
-            'Odia': 'or',         # Google supports this!
-            'Assamese': 'as',     # Google supports this!
-            'Kashmiri': 'ks',     # Worth trying
-            'Rajasthani': 'hi'    # Fallback to Hindi
-        }
-
-        # --- Helper: Safe Async Runner ---
-        def run_async_tts(coro):
-            try:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                loop.run_until_complete(coro)
-                loop.close()
-                return True
-            except Exception as e:
-                print(f"⚠️ Async Execution Failed: {e}")
-                return False
-
-        # --- STEP 1: Try Edge-TTS (Best Quality) ---
-        if language in edge_voice_map:
-            print(f"🎤 Attempting Edge-TTS for {language}...")
-            async def _save_edge():
-                communicate = edge_tts.Communicate(clean_text, edge_voice_map[language])
-                await communicate.save(save_path)
-
-            # If successful, return file. If fails, proceed to Step 2.
-            if run_async_tts(_save_edge()):
-                return f"/static/audio/{filename}"
-            else:
-                print(f"⚠️ Edge-TTS crashed. Moving to Google TTS...")
-
-        # --- STEP 2: Try Google TTS (Target Language) ---
-        # This catches Punjabi/Odia/Assamese if Edge fails
-        target_lang_code = gtts_code_map.get(language)
-        
-        if target_lang_code:
-            print(f"🎤 Attempting Google TTS for {language} ({target_lang_code})...")
-            try:
-                tts = gTTS(text=clean_text, lang=target_lang_code, slow=False)
-                tts.save(save_path)
-                return f"/static/audio/{filename}"
-            except Exception as e:
-                print(f"❌ Google TTS failed for {language}: {e}")
-                # If this fails, go to Step 3
-
-        # --- STEP 3: Ultimate Fallback (Hindi) ---
-        print("🚨 All methods failed. Fallback to Hindi.")
         try:
-            tts = gTTS(text=clean_text, lang='hi', slow=False)
+            edge_voice_map = {
+                'Hindi': 'hi-IN-SwaraNeural',
+                'English': 'en-IN-NeerjaNeural',
+                'Marathi': 'mr-IN-AarohiNeural',
+                'Tamil': 'ta-IN-PallaviNeural',
+                'Gujarati': 'gu-IN-DhwaniNeural',
+                'Punjabi': 'pa-IN-OjasNeural',
+                'Bengali': 'bn-IN-TanishaaNeural'
+            }
+            
+            clean_text = self.clean_text(text)
+            filename = f"response_{uuid.uuid4().hex[:8]}.mp3"
+            save_path = os.path.join("static", "audio", filename)
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+            if language in edge_voice_map:
+                try:
+                    async def _save_edge():
+                        communicate = edge_tts.Communicate(clean_text, edge_voice_map[language])
+                        await communicate.save(save_path)
+                    run_async_tts(_save_edge())
+                    return f"/static/audio/{filename}"
+                except:
+                    pass 
+
+            lang_codes = {'Hindi': 'hi', 'English': 'en', 'Marathi': 'mr', 'Tamil': 'ta', 'Gujarati': 'gu', 'Punjabi': 'pa', 'Bengali': 'bn'}
+            code = lang_codes.get(language, 'hi')
+            tts = gTTS(text=clean_text, lang=code, slow=False)
             tts.save(save_path)
             return f"/static/audio/{filename}"
-        except:
+
+        except Exception as e:
+            print(f"Audio Error: {e}")
             return None
-         # © 2026 KisanMitra AI. All Rights Reserved.

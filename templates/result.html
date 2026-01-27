@@ -1,172 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Analysis Result - KisanMitra AI</title>
+    <title>KisanMitra Diagnosis Report</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        :root { --primary: #2e7d32; --bg: #f4f9f4; --card-bg: #ffffff; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: #333; }
+        :root { --primary: #2e7d32; --bg: #f4f9f4; --card-bg: white; --organic-glow: #00e676; --chemical-glow: #ff1744; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
         
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { color: var(--primary); display: inline-block; margin: 0; }
-        .back-btn { float: left; text-decoration: none; color: #555; font-weight: bold; font-size: 1.2rem; }
-        
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { color: var(--primary); font-size: 2.2em; margin: 0; }
+        .action-bar { margin-top: 10px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .nav-btn { display: inline-block; text-decoration: none; color: #555; background: #e0e0e0; padding: 8px 15px; border-radius: 20px; transition: 0.3s; font-size: 0.9em; cursor: pointer; border: none; }
+        .nav-btn:hover { background: #d0d0d0; }
+        .download-btn { background: #2e7d32; color: white; }
+        .download-btn:hover { background: #1b5e20; }
+
+        /* --- BROWSER VIEW: 2x2 GRID --- */
         .grid-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            grid-template-rows: auto auto;
             gap: 20px;
             max-width: 1200px;
             margin: auto;
-            align-items: stretch;
         }
 
         .card {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            border: 1px solid #e0e0e0;
-            display: flex;
-            flex-direction: column;
+            background: var(--card-bg); border-radius: 15px; padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            display: flex; flex-direction: column;
+            height: 400px; /* Fixed height for Browser consistency */
+            overflow: hidden; 
+        }
+
+        /* --- PDF MODE: CLEAN VERTICAL STACK --- */
+        /* This fixes the "messy/uneven" look by stacking cards 1 by 1 */
+        .grid-container.pdf-mode {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
         }
         
-        h2 { color: var(--primary); font-size: 1.3rem; border-bottom: 2px solid #e8f5e9; padding-bottom: 10px; margin-top: 0; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-        
-        /* Diagnosis Scroll & Justify */
-        .diagnosis-container { display: flex; flex-direction: column; height: 100%; }
-        .diagnosis-scroll-box {
-            font-size: 1.05rem; 
-            line-height: 1.6; 
-            white-space: pre-wrap;
-            color: #444; 
-            max-height: 350px; 
-            overflow-y: auto; 
-            text-align: justify;
-            padding-right: 10px;
-            scrollbar-width: thin;
-            scrollbar-color: #2e7d32 #f1f1f1;
+        .card.pdf-mode {
+            height: auto !important;       /* Expand to fit all text */
+            overflow: visible !important;  /* Show hidden text */
+            margin-bottom: 30px !important; /* Clear separation */
+            page-break-inside: avoid !important; /* Try not to slice cards */
+            border: 1px solid #ccc !important; /* Cleaner border for print */
+            box-shadow: none !important;
+            display: block !important;
         }
-        .diagnosis-scroll-box::-webkit-scrollbar { width: 8px; }
-        .diagnosis-scroll-box::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-        .diagnosis-scroll-box::-webkit-scrollbar-thumb { background: #2e7d32; border-radius: 4px; }
 
-        .plant-img { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; float: right; margin-left: 15px; margin-bottom: 10px; border: 2px solid #eee; }
-        .audio-player { width: 100%; margin-top: auto; padding-top: 15px; }
+        h2 { color: var(--primary); border-bottom: 2px solid #e8f5e9; padding-bottom: 8px; margin-top: 0; font-size: 1.3em; margin-bottom: 15px; }
 
-        /* Stats Filled Layout */
-        .stats-container { 
-            display: flex; 
-            justify-content: space-evenly; 
-            align-items: center; 
-            flex-grow: 1; 
-            padding: 10px 0; 
-        }
-        .stat-box { text-align: center; }
-        .stat-val { font-size: 2rem; font-weight: bold; color: var(--primary); display: block; margin-bottom: 5px; }
-        .stat-label { color: #666; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;}
+        .scrollable-content { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
+        .scrollable-content::-webkit-scrollbar { width: 6px; }
+        .scrollable-content::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 4px; }
+
+        /* Content Styles */
+        .diagnosis-text { white-space: pre-wrap; line-height: 1.6; color: #333; font-size: 0.95em; }
+        .uploaded-img { width: 100%; height: 150px; object-fit: cover; border-radius: 10px; margin-bottom: 15px; border: 1px solid #eee; }
+        .meter-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+        .progress-circle { width: 130px; height: 130px; border-radius: 50%; background: conic-gradient(#4caf50 calc(var(--percent) * 1%), #eee 0); display: flex; justify-content: center; align-items: center; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .progress-circle::before { content: ""; width: 100px; height: 100px; border-radius: 50%; background: white; position: absolute; }
+        .progress-value { position: relative; font-size: 26px; font-weight: 800; color: #2e7d32; }
+        .stats-pills { margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .stat-pill { padding: 6px 12px; border-radius: 20px; font-size: 0.85em; font-weight: bold; color: white; display: flex; align-items: center; gap: 5px; }
+        .pill-severity { background: #ff9800; }
+        .pill-confidence { background: #2196f3; }
         
-        /* Video & Products */
-        .video-list { list-style: none; padding: 0; margin: 0; max-height: 250px; overflow-y: auto; }
-        .video-item { margin-bottom: 10px; display: flex; align-items: center; background: #fafafa; padding: 10px; border-radius: 8px; border: 1px solid #eee; transition: 0.2s;}
-        .video-item:hover { background: #fff; border-color: #ffcdd2; }
-        .video-icon { color: #f44336; font-size: 1.8rem; margin-right: 15px; }
-        .video-link { text-decoration: none; color: #333; font-weight: 600; flex-grow: 1; font-size: 0.95rem; }
+        /* Interactive Elements */
+        .video-item { margin-bottom: 8px; padding: 8px; background: #fff; border: 1px solid #ddd; border-radius: 8px; transition: 0.2s; }
+        .video-item a { text-decoration: none; color: #333; display: flex; align-items: center; font-size: 0.9em; }
         
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-        .product-card { background: #fffbe6; border: 1px solid #ffe58f; padding: 12px; border-radius: 8px; text-align: center; text-decoration: none; color: #333; transition: 0.2s; }
-        .product-card:hover { background: #ffe58f; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .p-type { display: block; font-size: 0.7rem; color: #856404; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
-        .p-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 5px; display: block;}
-        .buy-text { font-size:0.8rem; color:#2e7d32; font-weight: bold; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+        .product-card { padding: 10px; border-radius: 10px; text-align: center; background: #fff; position: relative; }
+        .neon-organic { border: 1px solid #4caf50; box-shadow: 0 0 6px var(--organic-glow); }
+        .neon-organic::after { content: "Organic 🌱"; display: block; font-size: 0.7em; color: #2e7d32; margin-top: 4px; font-weight: bold; }
+        .neon-chemical { border: 1px solid #f44336; box-shadow: 0 0 6px var(--chemical-glow); }
+        .neon-chemical::after { content: "Chemical ⚠️"; display: block; font-size: 0.7em; color: #d32f2f; margin-top: 4px; font-weight: bold; }
+        .buy-btn { background: #333; color: white; padding: 3px 10px; border-radius: 10px; text-decoration: none; font-size: 0.75em; margin-top: 5px; display: inline-block; }
+        
+        /* Expert Styles (Updated) */
+        .expert-item { background: #fafafa; border-radius: 8px; padding: 10px; margin-bottom: 8px; border: 1px solid #eee; display: flex; gap: 10px; align-items: center; }
+        .expert-actions { margin-left: auto; display: flex; flex-direction: column; gap: 4px; }
+        .action-btn { text-decoration: none; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; text-align: center; }
+        .map-btn { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+        
+        /* Clickable Expert Name */
+        .expert-link { text-decoration: none; color: #2e7d32; font-weight: bold; font-size: 0.95em; transition: 0.2s; }
+        .expert-link:hover { text-decoration: underline; color: #1b5e20; }
 
-        @media (max-width: 768px) { .grid-container { grid-template-columns: 1fr; } .diagnosis-scroll-box { max-height: none; overflow-y: visible; } }
+        .comparison-table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
+        .comparison-table th { background: #e8f5e9; color: var(--primary); padding: 8px; text-align: center; }
+        .comparison-table td { padding: 8px; border-bottom: 1px solid #eee; text-align: center; }
+
+        @media (max-width: 768px) { .grid-container { grid-template-columns: 1fr; } .card { height: auto; max-height: 500px; } }
     </style>
 </head>
 <body>
-    <div class="header">
-        <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> Home</a>
-        <h1>🌾 KisanMitra Diagnosis</h1>
+    <div class="header" id="reportHeader">
+        <h1>🌾 KisanMitra Report</h1>
+        <div class="action-bar" data-html2canvas-ignore="true">
+            <a href="/" class="nav-btn">← New Diagnosis / नई जांच</a>
+            <button onclick="downloadPDF()" class="nav-btn download-btn">📥 Download Report (PDF)</button>
+        </div>
     </div>
-    <div class="grid-container">
+
+    <div id="reportContent" class="grid-container">
+        
         <div class="card">
-            <h2><i class="fas fa-stethoscope"></i> Diagnosis (निदान)</h2>
-            <div class="diagnosis-container">
-                <div class="diagnosis-scroll-box">
-                    <img src="/static/uploads/{{ diagnosis.image_filename }}" class="plant-img" alt="Plant Image">
-                    {{ data.diagnosis }}
-                </div>
+            <h2>📢 Diagnosis & Cure (निदान)</h2>
+            <div class="scrollable-content">
+                <img src="/static/uploads/{{ diagnosis.image_filename }}" class="uploaded-img" alt="Crop">
+                <div class="diagnosis-text">{{ data.diagnosis }}</div>
                 {% if diagnosis.audio_path %}
-                <div style="margin-top: 15px;">
-                    <p style="margin-bottom: 5px; color: #666; font-size: 0.9rem;"><strong><i class="fas fa-volume-up"></i> Listen to Advice:</strong></p>
-                    <audio controls class="audio-player"><source src="{{ diagnosis.audio_path }}" type="audio/mpeg"></audio>
+                <div style="margin-top:10px;">
+                    <audio controls style="width:100%; height: 35px;">
+                        <source src="{{ diagnosis.audio_path }}" type="audio/mpeg">
+                    </audio>
+                    <a href="{{ diagnosis.audio_path }}" target="_blank" style="font-size:0.8em; color:#666; text-decoration:none; display:none;" class="pdf-audio-link">🎵 Click to Listen (Audio)</a>
                 </div>
                 {% endif %}
             </div>
         </div>
+
         <div class="card">
-            <h2><i class="fas fa-chart-pie"></i> Health Statistics (आंकड़े)</h2>
-            <div class="stats-container">
-                <div class="stat-box">
-                    <div style="width: 130px; height: 130px; margin: auto;"><canvas id="healthChart"></canvas></div>
-                    <div style="margin-top: 10px;"><span class="stat-label">AI Confidence</span></div>
+            <h2>📊 Health Analysis (विश्लेषण)</h2>
+            <div class="meter-wrapper">
+                <div class="progress-circle" style="--percent: {{ data.stats.health_score | default(0) | int }};">
+                    <span class="progress-value">{{ data.stats.health_score | default(0) }}%</span>
                 </div>
-                <div class="stat-box">
-                    <span class="stat-val" style="color: {{ 'red' if data.stats.infection_severity == 'High' else ('orange' if data.stats.infection_severity == 'Medium' else 'green') }};">{{ data.stats.infection_severity or 'Unknown' }}</span>
-                    <span class="stat-label">Severity Level</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-val">{{ data.stats.health_score or 0 }}%</span>
-                    <span class="stat-label">Health Score</span>
+                <div class="stats-pills">
+                    <div class="stat-pill pill-confidence">
+                        <i class="fas fa-check-circle"></i> {{ data.stats.confidence | default(0) }}% Conf.
+                    </div>
+                    <div class="stat-pill pill-severity" 
+                         style="background-color: {% if 'High' in (data.stats.infection_severity|string) or 'उच्च' in (data.stats.infection_severity|string) %}#f44336{% elif 'Low' in (data.stats.infection_severity|string) or 'कम' in (data.stats.infection_severity|string) %}#4caf50{% else %}#ff9800{% endif %};">
+                        <i class="fas fa-exclamation-triangle"></i> {{ data.stats.infection_severity | default('Unknown') }}
+                    </div>
                 </div>
             </div>
         </div>
+
         <div class="card">
-            <h2><i class="fab fa-youtube"></i> Video Remedies (वीडियो उपाय)</h2>
-            <ul class="video-list">
-                {% if data.remedies_video_queries %}
-                    {% for query in data.remedies_video_queries %}
-                    <li class="video-item"><i class="fab fa-youtube video-icon"></i><a href="https://www.youtube.com/results?search_query={{ query | urlencode }}" target="_blank" class="video-link">Watch Guide: {{ query }} <i class="fas fa-external-link-alt" style="font-size: 0.8rem;"></i></a></li>
-                    {% endfor %}
-                {% else %}<p style="color:#777; font-style: italic;">No specific video guides found.</p>{% endif %}
-            </ul>
-        </div>
-        <div class="card">
-            <h2><i class="fas fa-shopping-cart"></i> Buy Medicines (दवा खरीदें)</h2>
-            <p style="color:#666; font-size: 0.85rem; margin-bottom: 10px;">Verified sellers near you:</p>
-            <div class="product-grid">
-                {% if data.products %}
-                    {% for product in data.products %}
-                    <a href="https://www.google.com/search?q=buy+{{ product.name | urlencode }}+agriculture+medicine" target="_blank" class="product-card">
-                        <span class="p-type">{{ product.type }}</span><span class="p-name">{{ product.name }}</span><div class="buy-text">Shop Now <i class="fas fa-chevron-right"></i></div>
+            <h2>🎥 Related Videos (वीडियो)</h2>
+            <div class="scrollable-content">
+                {% for query in data.remedies_video_queries %}
+                <div class="video-item">
+                    <a href="https://www.youtube.com/results?search_query={{ query }}" target="_blank">
+                        <i class="fab fa-youtube" style="color:red; font-size:1.4em; margin-right:10px;"></i>
+                        <span>{{ query }}</span>
                     </a>
-                    {% endfor %}
-                {% else %}<p style="color:#777; font-style: italic;">No specific products recommended.</p>{% endif %}
+                </div>
+                {% endfor %}
             </div>
         </div>
+
+        <div class="card">
+            <h2>🛒 Products (दवाई)</h2>
+            <div class="scrollable-content">
+                <div class="product-grid">
+                    {% for product in data.products %}
+                    <div class="product-card {% if 'Organic' in product.type or 'जैविक' in product.type %}neon-organic{% else %}neon-chemical{% endif %}">
+                        <div style="font-weight:bold; font-size:0.9em;">{{ product.name }}</div>
+                        <a href="https://www.google.com/search?q={{ product.name }} buy online india" target="_blank" class="buy-btn">Buy Now</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>👨‍🌾 Local Experts (संपर्क)</h2>
+            <div class="scrollable-content">
+                {% for expert in data.expert_contacts %}
+                <div class="expert-item">
+                    <div style="background:#e8f5e9; padding:8px; border-radius:50%; color:#2e7d32;">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div style="flex-grow:1;">
+                        <a href="https://www.google.com/search?q={{ expert.name }}+{{ expert.location }}" target="_blank" class="expert-link">
+                            {{ expert.name }} <i class="fas fa-external-link-alt" style="font-size:0.7em;"></i>
+                        </a>
+                        <div style="font-size:0.8em; color:#666; margin-top:2px;">{{ expert.role }}</div>
+                        <div style="font-size:0.75em; color:#888;">📍 {{ expert.location }}</div>
+                        <div style="font-size:0.8em; color:#2e7d32; margin-top:2px; font-weight:bold;">
+                            📞 {{ expert.contact }}
+                        </div>
+                    </div>
+                    <div class="expert-actions">
+                        <a href="https://www.google.com/maps/search/?q={{ expert.location }}+{{ expert.name }}" target="_blank" class="action-btn map-btn">
+                            <i class="fas fa-map-marker-alt"></i> Map
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚖️ Cost vs Risk (विश्लेषण)</h2>
+            <div class="scrollable-content">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>💰 Cost</th>
+                            <th>⚠️ Risk</th>
+                            <th>⏳ Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight:bold; color:#2e7d32;">🌱 Organic</td>
+                            <td>{{ data.cost_risk_analysis.organic.cost }}</td>
+                            <td style="color:green;">{{ data.cost_risk_analysis.organic.risk }}</td>
+                            <td>{{ data.cost_risk_analysis.organic.timeline }}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold; color:#d32f2f;">🧪 Chemical</td>
+                            <td>{{ data.cost_risk_analysis.chemical.cost }}</td>
+                            <td style="color:red;">{{ data.cost_risk_analysis.chemical.risk }}</td>
+                            <td>{{ data.cost_risk_analysis.chemical.timeline }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
+
     <script>
-        const ctx = document.getElementById('healthChart').getContext('2d');
-        const confidence = {{ data.stats.confidence or 0 }};
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: { labels: ['Confidence', 'Uncertainty'], datasets: [{ data: [confidence, 100 - confidence], backgroundColor: ['#2e7d32', '#e0e0e0'], borderWidth: 0 }] },
-            options: { cutout: '75%', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } },
-            plugins: [{ id: 'text', beforeDraw: function(chart) {
-                var width = chart.width, height = chart.height, ctx = chart.ctx;
-                ctx.restore();
-                var fontSize = (height / 100).toFixed(2);
-                ctx.font = "bold " + fontSize + "em sans-serif";
-                ctx.textBaseline = "middle";
-                ctx.fillStyle = "#2e7d32";
-                var text = confidence + "%", textX = Math.round((width - ctx.measureText(text).width) / 2), textY = height / 2;
-                ctx.fillText(text, textX, textY);
-                ctx.save();
-            } }]
-        });
+        function downloadPDF() {
+            const container = document.getElementById('reportContent');
+            const cards = document.querySelectorAll('.card');
+            
+            // 1. Switch to PDF Layout (Single Column, Full Height)
+            container.classList.add('pdf-mode');
+            cards.forEach(card => card.classList.add('pdf-mode'));
+
+            // 2. Show Audio Link Text
+            const audioLinks = document.querySelectorAll('.pdf-audio-link');
+            audioLinks.forEach(link => link.style.display = 'block');
+
+            const opt = {
+                margin:       0.2, 
+                filename:     'KisanMitra_Report.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true }, 
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: 'avoid-all' } // Prevent cutting cards in half
+            };
+
+            // 3. Generate & Download
+            html2pdf().set(opt).from(container).save().then(() => {
+                // 4. Restore Browser Layout (Grid)
+                container.classList.remove('pdf-mode');
+                cards.forEach(card => card.classList.remove('pdf-mode'));
+                audioLinks.forEach(link => link.style.display = 'none');
+            });
+        }
     </script>
-    <p>&copy; 2026 KisanMitra AI. All Rights Reserved.</p>
 </body>
 </html>
