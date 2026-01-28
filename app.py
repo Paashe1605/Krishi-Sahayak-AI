@@ -73,7 +73,6 @@ def show_result(result_id):
     try:
         data = json.loads(diagnosis_record.ai_diagnosis)
     except:
-        # Robust fallback
         data = { "diagnosis": "Error loading data", "stats": {"health_score":0}, "products": [], "expert_contacts": [], "cost_risk_analysis": {} }
     
     return render_template('result.html', diagnosis=diagnosis_record, data=data)

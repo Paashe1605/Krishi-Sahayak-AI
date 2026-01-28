@@ -35,37 +35,46 @@ class KisanMitraAgent:
             raise e
 
     def clean_text(self, text):
+        """Cleans text for TTS and Display (removes markdown)."""
         if not text: return ""
+        # Handle dict/list inputs gracefully
+        if isinstance(text, (dict, list)): return str(text)
+        
         clean = re.sub(r'\*\*|__', '', text) 
         clean = re.sub(r'#+', '', clean)
-        clean = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', clean)
+        clean = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', clean) # Remove links
         clean = re.sub(r'^\*\s', '• ', clean, flags=re.MULTILINE) 
         return clean.strip()
 
     def clean_json_output(self, raw_text):
         """
-        Robustly extracts JSON, handling comments and markdown artifacts.
+        The 'Sanitizer': Removes Search Citations and extracts JSON.
         """
         if not raw_text: return None
         try:
-            # 1. Remove code block markers
-            text = re.sub(r'```json\s*', '', raw_text)
+            # 1. Remove Google Search Citations like [1], [2], 【1:0†source】
+            # This is the key fix for the "Expecting value" error
+            text = re.sub(r'\[\d+\]', '', raw_text)
+            text = re.sub(r'【.*?】', '', text)
+            
+            # 2. Remove code block markers
+            text = re.sub(r'```json\s*', '', text)
             text = re.sub(r'```\s*', '', text)
             
-            # 2. Remove C++ style comments // which break JSON parsers
-            text = re.sub(r'//.*', '', text)
-            
-            # 3. Find the first { and the last }
+            # 3. Find the largest JSON block { ... }
             start = text.find('{')
             end = text.rfind('}') + 1
             if start != -1 and end != -1:
                 json_str = text[start:end]
+                # Fix common trailing comma errors
+                json_str = re.sub(r',\s*}', '}', json_str)
                 return json.loads(json_str)
             
-            return None
+            # 4. Try parsing the whole text
+            return json.loads(text)
         except Exception as e:
             print(f"⚠️ JSON Parse Error: {e}")
-            # print(f"📄 Raw Text causing error: {raw_text}") # Uncomment to debug
+            # print(f"DEBUG RAW TEXT: {raw_text}") # Uncomment for deeper debugging
             return None
 
     def get_fallback_data(self, error_msg):
@@ -83,13 +92,11 @@ class KisanMitraAgent:
         }
 
     def _call_ai_model(self, prompt, pil_image, use_search=False):
-        """Internal helper to call AI with or without search tools."""
         config_args = {'temperature': 0.4}
-        
         if use_search:
             config_args['tools'] = [types.Tool(google_search=types.GoogleSearch())]
         else:
-            # Enforce JSON when not searching
+            # Enforce JSON mode ONLY when not searching to avoid conflicts
             config_args['response_mime_type'] = 'application/json'
 
         response = self.client.models.generate_content(
@@ -104,28 +111,30 @@ class KisanMitraAgent:
             pil_image = Image.open(image_path)
             if not user_query: user_query = "What is wrong with my plant?"
 
-            base_prompt = f"""
-             You are 'KisanMitra', an expert Forensic Plant Pathologist and Agricultural Market Analyst as well as an Agronomist who provides best results.
+            # --- MASTER PROMPT (Used for BOTH Search & Fallback) ---
+            # This ensures the Fallback is just as "Top-Notch" as the Search version.
+            master_prompt = f"""
+            You are 'KisanMitra', an expert Forensic Plant Pathologist, Agronomist, and Market Analyst.
             
             User Query: "{user_query}"
             Language: {language}
-            Location: {location}
+            User Location: {location}
             
             TASK:
-            1. **Forensic Diagnosis:** Identify crop, disease, pathogen lifecycle, and specific visual symptoms properly.
-            2. **Cures:** Provide multiple(Minimum 4) disease specific Organic (Priority) and Chemical remedies.
-            3. **Local Intelligence:** Provide realistic details for KVK/Agri Officers in all major villages, districts,and cities.{location}.
-            4. **Market Analysis:** Properly compare Costs vs Risk with accuracy and figures.
+            1. **Forensic Diagnosis:** Identify crop, disease, lifecycle, and specific visual symptoms. Be extremely detailed.
+            2. **Cures:** Provide 4+ specific remedies (Organic & Chemical).
+            3. **Local Intelligence:** Provide realistic KVK/Agri Officer contacts for {location}.
+            4. **Market Analysis:** Compare Costs vs Risk with estimated figures.
             
-            CRITICAL OUTPUT INSTRUCTION: 
-            Return ONLY a valid JSON object. 
-            Translate ALL strings to {language}. 
-            Translate Numbers (e.g. "50%" -> "५०%", "Cost: Low" -> "लागत: कम").
+            CRITICAL OUTPUT RULES:
+            - Return ONLY a valid JSON object.
+            - Translate ALL strings to {language}.
+            - Translate Numbers (e.g., "50%" -> "५०%").
             
             JSON Structure:
             {{
-                "diagnosis": "Detailed diagnosis in proper point wise format {language}. Include Symptoms and best organic & chemical remedies {language}.",
-                "audio_script": "Best possible proper conversational summary and also refer user(farmer) to see the related Youtube Video and Experts Contacts in the below sections in {language} (max 3 sentences)(Begin with proper salutation).",
+                "diagnosis": "Detailed point-wise diagnosis in {language}.",
+                "audio_script": "Conversational summary in {language} (max 3 sentences).",
                 "stats": {{ 
                     "health_score": "Integer (0-100)", 
                     "infection_severity": "Low/Medium/High (Translated)", 
@@ -147,34 +156,37 @@ class KisanMitraAgent:
             }}
             """
 
-            # --- ATTEMPT 1: SEARCH ---
+            # --- ATTEMPT 1: SEARCH MODE (Real-Time Data) ---
             print("🔍 Attempting Analysis WITH Google Search...")
             try:
-                # We specifically ask NOT to include citations in the JSON to avoid breaking it
-                search_prompt = base_prompt + " Use Google Search for real-time info like Use Google Search to find Products(medicines) & current market prices for medicines and actual contact numbers for KVKs and verify diagnosis. Do NOT include markdown citations or comments in the JSON."
-                raw_text = self._call_ai_model(search_prompt, pil_image, use_search=True)
+                # We specifically instruct to avoid citation markers in the JSON
+                search_instruction = master_prompt + " \n\nIMPORTANT: Use Google Search to find real-time prices and contacts. Do NOT include citation markers like [1] or sources in the JSON output."
                 
+                raw_text = self._call_ai_model(search_instruction, pil_image, use_search=True)
                 data = self.clean_json_output(raw_text)
+                
                 if data and "diagnosis" in data:
                     print("✅ Search Analysis Successful.")
                     data['diagnosis'] = self.clean_text(data.get('diagnosis', ''))
                     return data
                 else:
-                    print("⚠️ Search result was not valid JSON. Falling back...")
+                    print("⚠️ Search output format invalid. Switching to Fallback...")
             except Exception as e:
-                print(f"⚠️ Search failed ({e}). Falling back...")
+                print(f"⚠️ Search failed ({e}). Switching to Fallback...")
 
-            # --- ATTEMPT 2: FALLBACK ---
+            # --- ATTEMPT 2: FALLBACK MODE (Internal Knowledge) ---
+            # Now uses the SAME high-quality master_prompt
             print("🔄 Retrying WITHOUT Search (Standard Analysis)...")
-            fallback_prompt = base_prompt + " Use internal knowledge."
-            raw_text = self._call_ai_model(fallback_prompt, pil_image, use_search=False)
+            
+            fallback_instruction = master_prompt + " \n\nUse your internal expert knowledge base. Do not use external search."
+            raw_text = self._call_ai_model(fallback_instruction, pil_image, use_search=False)
             
             data = self.clean_json_output(raw_text)
             if data:
                 data['diagnosis'] = self.clean_text(data.get('diagnosis', ''))
                 return data
             
-            return self.get_fallback_data("Analysis failed.")
+            return self.get_fallback_data("Both Search and Standard analysis failed.")
 
         except Exception as e:
             print(f"❌ Critical Error: {e}")
