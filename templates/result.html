@@ -17,7 +17,19 @@
         .download-btn { background: #2e7d32; color: white; }
         .download-btn:hover { background: #1b5e20; }
 
-        /* --- BROWSER VIEW: 2x2 GRID --- */
+        /* --- PDF BRANDING HEADER (Hidden by default) --- */
+        .pdf-only-header {
+            display: none; /* Hidden on website */
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .pdf-only-header .logo-icon { font-size: 4em; display: block; margin-bottom: 10px; }
+        .pdf-only-header h1 { color: var(--primary); margin: 0; font-size: 2.5em; }
+        .pdf-only-header p { color: #666; margin: 5px 0 0; font-size: 1.1em; }
+
+        /* --- BROWSER VIEW --- */
         .grid-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -30,37 +42,56 @@
             background: var(--card-bg); border-radius: 15px; padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.06);
             display: flex; flex-direction: column;
-            height: 400px; /* Fixed height for Browser consistency */
+            height: 400px; /* Fixed height for Browser */
             overflow: hidden; 
         }
 
-        /* --- PDF MODE: CLEAN VERTICAL STACK --- */
-        /* This fixes the "messy/uneven" look by stacking cards 1 by 1 */
+        /* --- PDF MODE: HYBRID LAYOUT --- */
         .grid-container.pdf-mode {
             display: block !important;
             width: 100% !important;
-            max-width: 100% !important;
+        }
+        
+        /* Show the header ONLY in PDF mode */
+        .grid-container.pdf-mode .pdf-only-header {
+            display: block !important; 
         }
         
         .card.pdf-mode {
-            height: auto !important;       /* Expand to fit all text */
-            overflow: visible !important;  /* Show hidden text */
-            margin-bottom: 30px !important; /* Clear separation */
-            page-break-inside: avoid !important; /* Try not to slice cards */
-            border: 1px solid #ccc !important; /* Cleaner border for print */
+            height: auto !important;       
+            overflow: visible !important;  
+            margin-bottom: 30px !important; 
+            page-break-inside: avoid !important; 
+            border: 1px solid #ccc !important;
             box-shadow: none !important;
             display: block !important;
         }
 
+        /* PDF IMAGE FIX */
+        .card.pdf-mode .uploaded-img {
+            height: auto !important;
+            max-height: 300px !important;
+            width: 100% !important;
+            object-fit: contain !important;
+            margin-bottom: 20px !important;
+            border: none !important;
+        }
+
         h2 { color: var(--primary); border-bottom: 2px solid #e8f5e9; padding-bottom: 8px; margin-top: 0; font-size: 1.3em; margin-bottom: 15px; }
 
-        .scrollable-content { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
+        .scrollable-content { 
+            flex-grow: 1; 
+            overflow-y: auto; 
+            padding-right: 5px; 
+            margin-bottom: 10px; 
+        }
         .scrollable-content::-webkit-scrollbar { width: 6px; }
         .scrollable-content::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 4px; }
 
-        /* Content Styles */
         .diagnosis-text { white-space: pre-wrap; line-height: 1.6; color: #333; font-size: 0.95em; }
         .uploaded-img { width: 100%; height: 150px; object-fit: cover; border-radius: 10px; margin-bottom: 15px; border: 1px solid #eee; }
+        .audio-container { margin-top: auto; padding-top: 10px; border-top: 1px solid #f0f0f0; background: white; }
+
         .meter-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
         .progress-circle { width: 130px; height: 130px; border-radius: 50%; background: conic-gradient(#4caf50 calc(var(--percent) * 1%), #eee 0); display: flex; justify-content: center; align-items: center; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .progress-circle::before { content: ""; width: 100px; height: 100px; border-radius: 50%; background: white; position: absolute; }
@@ -70,8 +101,22 @@
         .pill-severity { background: #ff9800; }
         .pill-confidence { background: #2196f3; }
         
-        /* Interactive Elements */
-        .video-item { margin-bottom: 8px; padding: 8px; background: #fff; border: 1px solid #ddd; border-radius: 8px; transition: 0.2s; }
+        /* --- NEW: YouTube Video Glow Animation --- */
+        .video-item { 
+            margin-bottom: 8px; 
+            padding: 8px; 
+            background: #fff; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smooth spring-like effect */
+            position: relative;
+            top: 0;
+        }
+        .video-item:hover { 
+            transform: translateY(-4px); /* Lift up */
+            box-shadow: 0 8px 15px rgba(255, 0, 0, 0.15); /* Red glow for YouTube */
+            border-color: #ffcdd2; /* Light red border */
+        }
         .video-item a { text-decoration: none; color: #333; display: flex; align-items: center; font-size: 0.9em; }
         
         .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
@@ -82,13 +127,10 @@
         .neon-chemical::after { content: "Chemical ⚠️"; display: block; font-size: 0.7em; color: #d32f2f; margin-top: 4px; font-weight: bold; }
         .buy-btn { background: #333; color: white; padding: 3px 10px; border-radius: 10px; text-decoration: none; font-size: 0.75em; margin-top: 5px; display: inline-block; }
         
-        /* Expert Styles (Updated) */
         .expert-item { background: #fafafa; border-radius: 8px; padding: 10px; margin-bottom: 8px; border: 1px solid #eee; display: flex; gap: 10px; align-items: center; }
         .expert-actions { margin-left: auto; display: flex; flex-direction: column; gap: 4px; }
         .action-btn { text-decoration: none; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; text-align: center; }
         .map-btn { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
-        
-        /* Clickable Expert Name */
         .expert-link { text-decoration: none; color: #2e7d32; font-weight: bold; font-size: 0.95em; transition: 0.2s; }
         .expert-link:hover { text-decoration: underline; color: #1b5e20; }
 
@@ -100,7 +142,7 @@
     </style>
 </head>
 <body>
-    <div class="header" id="reportHeader">
+    <div class="header" id="webHeader">
         <h1>🌾 KisanMitra Report</h1>
         <div class="action-bar" data-html2canvas-ignore="true">
             <a href="/" class="nav-btn">← New Diagnosis / नई जांच</a>
@@ -110,20 +152,28 @@
 
     <div id="reportContent" class="grid-container">
         
+        <div class="pdf-only-header">
+            <span class="logo-icon">🌾</span>
+            <h1>KisanMitra Report PDF</h1>
+            <p>Smart Agriculture AI Diagnosis & Analysis</p>
+            <p><b>This PDF supports Full Multimedia Functionality with "Clickable Links which leads to Real Resources and Results".</b></p>
+        </div>
+
         <div class="card">
             <h2>📢 Diagnosis & Cure (निदान)</h2>
             <div class="scrollable-content">
                 <img src="/static/uploads/{{ diagnosis.image_filename }}" class="uploaded-img" alt="Crop">
                 <div class="diagnosis-text">{{ data.diagnosis }}</div>
-                {% if diagnosis.audio_path %}
-                <div style="margin-top:10px;">
-                    <audio controls style="width:100%; height: 35px;">
-                        <source src="{{ diagnosis.audio_path }}" type="audio/mpeg">
-                    </audio>
-                    <a href="{{ diagnosis.audio_path }}" target="_blank" style="font-size:0.8em; color:#666; text-decoration:none; display:none;" class="pdf-audio-link">🎵 Click to Listen (Audio)</a>
-                </div>
-                {% endif %}
             </div>
+            
+            {% if diagnosis.audio_path %}
+            <div class="audio-container">
+                <audio controls style="width:100%; height: 35px;">
+                    <source src="{{ diagnosis.audio_path }}" type="audio/mpeg">
+                </audio>
+                <a href="{{ diagnosis.audio_path }}" target="_blank" style="font-size:0.8em; color:#666; text-decoration:none; display:none;" class="pdf-audio-link">🎵 Click to Listen (Audio)</a>
+            </div>
+            {% endif %}
         </div>
 
         <div class="card">
@@ -237,11 +287,11 @@
             const container = document.getElementById('reportContent');
             const cards = document.querySelectorAll('.card');
             
-            // 1. Switch to PDF Layout (Single Column, Full Height)
+            // 1. Switch to PDF Layout
             container.classList.add('pdf-mode');
             cards.forEach(card => card.classList.add('pdf-mode'));
 
-            // 2. Show Audio Link Text
+            // 2. Show Audio Link
             const audioLinks = document.querySelectorAll('.pdf-audio-link');
             audioLinks.forEach(link => link.style.display = 'block');
 
@@ -251,12 +301,12 @@
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true }, 
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: 'avoid-all' } // Prevent cutting cards in half
+                pagebreak:    { mode: ['avoid-all', 'css'] } 
             };
 
             // 3. Generate & Download
             html2pdf().set(opt).from(container).save().then(() => {
-                // 4. Restore Browser Layout (Grid)
+                // 4. Restore Browser Layout
                 container.classList.remove('pdf-mode');
                 cards.forEach(card => card.classList.remove('pdf-mode'));
                 audioLinks.forEach(link => link.style.display = 'none');
