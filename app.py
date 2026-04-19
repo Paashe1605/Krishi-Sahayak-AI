@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
 from models import db, Diagnosis
-from kisan_agent import KisanMitraAgent
+from kisan_agent import KisanShayakAgent
 
 load_dotenv()
 
@@ -24,14 +24,30 @@ agent = None
 try:
     project_id = os.getenv('GOOGLE_CLOUD_PROJECT')
     location = os.getenv('GOOGLE_CLOUD_LOCATION')
-    agent = KisanMitraAgent(project_id, location)
-    print("✅ KisanMitra Agent is Active (Vertex AI)")
+    agent = KisanShayakAgent(project_id, location)
+    print("✅ KisanShayak Agent is Active (Vertex AI)")
 except Exception as e:
     print(f"⚠️ Agent Offline: {e}")
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/kisan')
+def kisan():
+    return render_template('kisan_index.html')
+
+@app.route('/pashu')
+def pashu():
+    return render_template('coming_soon.html', title="Pashu Sahayak AI")
+
+@app.route('/rakshak')
+def rakshak():
+    return render_template('coming_soon.html', title="Krishi Rakshak")
+
+@app.route('/weather')
+def weather():
+    return render_template('coming_soon.html', title="Dharti Chakra")
 
 @app.route('/diagnose', methods=['POST'])
 def diagnose():
@@ -40,6 +56,8 @@ def diagnose():
     user_query = request.form.get('query', '')
     language = request.form.get('language', 'Hindi')
     location = request.form.get('location', 'India') 
+    lat = request.form.get('lat')
+    lng = request.form.get('lng')
 
     if file.filename == '': return jsonify({'error': 'No file selected'}), 400
 
@@ -50,7 +68,7 @@ def diagnose():
 
         if not agent: return jsonify({'error': 'AI Agent is offline'}), 500
 
-        analysis_data = agent.analyze_crop(filepath, user_query, language, location)
+        analysis_data = agent.analyze_crop(filepath, user_query, language, location, lat, lng)
         
         audio_text = analysis_data.get('audio_script', 'Diagnosis complete.')
         audio_url = agent.generate_audio(audio_text, language)
@@ -75,8 +93,10 @@ def show_result(result_id):
     except:
         data = { "diagnosis": "Error loading data", "stats": {"health_score":0}, "products": [], "expert_contacts": [], "cost_risk_analysis": {} }
     
-    return render_template('result.html', diagnosis=diagnosis_record, data=data)
+    return render_template('kisan_result.html', diagnosis=diagnosis_record, data=data)
 
 if __name__ == '__main__':
     with app.app_context(): db.create_all()
     app.run(debug=True, port=5000)
+
+    # © 2026 Paaras Shemrudkar & Prachi Sharma (Owners of KisanMitra AI). All rights reserved.

@@ -1,128 +1,259 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <title>KisanMitra AI 🌾</title>
+    <title>Krishi Shayak AI 🌾</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f9f4; text-align: center; padding: 20px; margin: 0; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { color: #2e7d32; margin-bottom: 5px; }
-        .logo { font-size: 60px; display: block; margin-bottom: 10px; }
-        .input-group { margin: 20px 0; text-align: left; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: #444; }
-        input[type="file"], select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .voice-box { display: flex; gap: 10px; }
-        .mic-btn { background: #ff9800; border: none; color: white; padding: 0 20px; border-radius: 8px; cursor: pointer; font-size: 20px; transition: 0.3s; }
-        .mic-active { background-color: #f44336 !important; animation: pulse-red 1.5s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); } 100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); } }
-        .btn-row { display: flex; gap: 10px; margin-top: 5px; }
-        .camera-btn { flex: 1; background: #2196F3; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .submit-btn { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
-        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; }
-        .breathing-icon { font-size: 80px; margin-bottom: 20px; animation: breathe 2s ease-in-out infinite; }
-        @keyframes breathe { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0.8; } }
-        #camera-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 2000; flex-direction: column; align-items: center; justify-content: center; }
-        #camera-feed { width: 100%; max-width: 600px; height: auto; border-radius: 10px; }
-        .camera-controls { margin-top: 20px; display: flex; gap: 20px; }
-        .snap-btn { background: white; border: 5px solid #ddd; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; }
-        .close-camera { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f9f4;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2e7d32;
+            margin-bottom: 5px;
+            font-size: 2.5em;
+        }
+
+        .logo {
+            font-size: 60px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        /* Grid Layout */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        /* Navigation Card Styling */
+        .nav-card {
+            background: #ffffff;
+            border: 2px solid #e0f2f1;
+            border-radius: 15px;
+            padding: 30px 20px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(46, 125, 50, 0.2);
+            border-color: #2e7d32;
+        }
+
+
+
+        .nav-card i {
+            font-size: 45px;
+            color: #2e7d32;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
+
+        .nav-card:hover i {
+            color: #ff9800;
+            transform: scale(1.1);
+        }
+
+        /* Custom Cow SVG Styling to match FontAwesome */
+        .custom-cow-icon {
+            width: 45px;
+            height: 45px;
+            fill: #2e7d32;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
+
+        .nav-card:hover .custom-cow-icon {
+            fill: #ff9800;
+            transform: scale(1.1);
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .card-desc {
+            font-size: 0.95em;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
     </style>
+    <script src="/static/js/translations.js"></script>
 </head>
+
 <body>
-<div id="loading-overlay">
-    <div class="breathing-icon">🌾</div>
-    <h3 style="color: #2e7d32; margin-top: 10px;">Analyzing Crop Health...</h3>
-    <p>Please wait while KisanMitra AI diagnoses the issue.</p>
-</div>
-<div id="camera-modal">
-    <span class="close-camera" onclick="stopCamera()">×</span>
-    <video id="camera-feed" autoplay playsinline></video>
-    <canvas id="camera-canvas" style="display:none;"></canvas>
-    <div class="camera-controls"><button class="snap-btn" onclick="takeSnapshot()"></button></div>
-</div>
-<div class="container">
-    <div class="logo">🌾</div>
-    <h1>KisanMitra AI</h1>
-    <p style="color: #666;">Your Personal Plant Doctor</p>
-    <form id="diagnoseForm">
-        <div class="input-group">
-            <label><i class="fas fa-language"></i> Language (भाषा):</label>
-            <select name="language" id="language">
-                <option value="Hindi">Hindi (हिंदी)</option>
-                <option value="English">English</option>
-                <option value="Marathi">Marathi (मराठी)</option>
-                <option value="Tamil">Tamil (தமிழ்)</option>
-                <option value="Gujarati">Gujarati (ગુજરાતી)</option>
-                <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
-                <option value="Bengali">Bengali (বাংলা)</option>
-            </select>
-        </div>
-        <div class="input-group">
-            <label><i class="fas fa-map-marker-alt"></i> Location (State/Region):</label>
-            <select name="location" id="location" required>
-                <option value="India" selected>Select your State (Default: India)</option>
-                <option value="Andhra Pradesh">Andhra Pradesh</option>
-                <option value="Bihar">Bihar</option>
-                <option value="Gujarat">Gujarat</option>
-                <option value="Haryana">Haryana</option>
-                <option value="Karnataka">Karnataka</option>
-                <option value="Madhya Pradesh">Madhya Pradesh</option>
-                <option value="Maharashtra">Maharashtra</option>
-                <option value="Punjab">Punjab</option>
-                <option value="Rajasthan">Rajasthan</option>
-                <option value="Tamil Nadu">Tamil Nadu</option>
-                <option value="Uttar Pradesh">Uttar Pradesh</option>
-                <option value="West Bengal">West Bengal</option>
-                <option value="Other">Other</option>
-            </select>
-        </div>
-        <div class="input-group">
-            <label><i class="fas fa-camera"></i> Upload Photo (फोटो लें):</label>
-            <input type="file" name="image" id="fileInput" accept="image/*" onchange="previewImage(event)">
-            <div class="btn-row"><button type="button" class="camera-btn" onclick="startCamera()"><i class="fas fa-camera"></i> Use Camera</button></div>
-            <img id="imgPreview" style="display:none; width: 100%; margin-top: 10px; border-radius: 10px; border: 2px solid #eee;">
-        </div>
-        <div class="input-group">
-            <label><i class="fas fa-comment-medical"></i> Describe Issue (समस्या बताएं):</label>
-            <div class="voice-box">
-                <textarea name="query" id="queryBox" placeholder="Optional: E.g., 'Leaves are turning yellow'"></textarea>
-                <button type="button" class="mic-btn" id="micBtn" onclick="startDictation()">🎤</button>
+    <div class="container">
+        <div class="logo">🌿</div>
+        <h1>Krishi Shayak AI</h1>
+        <p class="tagline" data-i18n="subtitle">Unified Platform for Smart Farming Ecosystem</p>
+
+        <!-- Global Settings Row -->
+        <div
+            style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <i class="fas fa-globe" style="color: #2e7d32; font-size: 1.2em;"></i>
+                <select id="globalLang"
+                    style="padding: 8px; border-radius: 8px; border: 1px solid #ccc; font-weight: bold; color: #333;"
+                    onchange="saveGlobalSettings()">
+                    <option value="en" selected>English</option>
+                    <option value="hi">Hindi (हिंदी)</option>
+                    <option value="mr">Marathi (मराठी)</option>
+                    <option value="gu">Gujarati (ગુજરાતી)</option>
+                    <option value="ta">Tamil (தமிழ்)</option>
+                    <option value="te">Telugu (తెలుగు)</option>
+                    <option value="bn">Bengali (বাংলা)</option>
+                    <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
+                    <option value="kn">Kannada (ಕನ್ನಡ)</option>
+                    <option value="ml">Malayalam (മലയാളം)</option>
+                </select>
             </div>
+            <button onclick="detectGlobalLocation()" id="globalLocBtn"
+                style="background: #2e7d32; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s;">
+                <i class="fas fa-map-marker-alt"></i> <span data-i18n="detect_loc">Detect Location</span>
+            </button>
         </div>
-        <button type="submit" class="submit-btn">Get Diagnosis Report (रिपोर्ट देखें)</button>
-    </form>
-</div>
-<script>
-    document.getElementById('diagnoseForm').onsubmit = async function(e) {
-        e.preventDefault();
-        let fileInput = document.getElementById('fileInput');
-        if (!fileInput.files.length) { alert("Please select or capture an image first!"); return; }
-        document.getElementById('loading-overlay').style.display = 'flex';
-        var formData = new FormData(this);
-        try {
-            let response = await fetch('/diagnose', { method: 'POST', body: formData });
-            let data = await response.json();
-            if (data.status === 'success' && data.redirect_url) { window.location.href = data.redirect_url; }
-            else { document.getElementById('loading-overlay').style.display = 'none'; alert("Error: " + (data.error || "Unknown error")); }
-        } catch (error) { document.getElementById('loading-overlay').style.display = 'none'; alert("Something went wrong with the server connection."); }
-    };
-    let videoStream = null;
-    async function startCamera() {
-        try { const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); videoStream = stream; document.getElementById('camera-feed').srcObject = stream; document.getElementById('camera-modal').style.display = 'flex'; } catch (err) { alert("Could not access camera: " + err); }
-    }
-    function stopCamera() { if (videoStream) { videoStream.getTracks().forEach(track => track.stop()); videoStream = null; } document.getElementById('camera-modal').style.display = 'none'; }
-    function takeSnapshot() {
-        const video = document.getElementById('camera-feed'); const canvas = document.getElementById('camera-canvas'); canvas.width = video.videoWidth; canvas.height = video.videoHeight; canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((blob) => { const file = new File([blob], "camera_capture.jpg", { type: "image/jpeg" }); const dt = new DataTransfer(); dt.items.add(file); document.getElementById('fileInput').files = dt.files; document.getElementById('imgPreview').src = URL.createObjectURL(file); document.getElementById('imgPreview').style.display = 'block'; stopCamera(); }, 'image/jpeg');
-    }
-    function previewImage(event) { if (event.target.files[0]) { document.getElementById('imgPreview').src = URL.createObjectURL(event.target.files[0]); document.getElementById('imgPreview').style.display = 'block'; } }
-    function startDictation() {
-        if (window.hasOwnProperty('webkitSpeechRecognition')) {
-            var recognition = new webkitSpeechRecognition(); var langCodes = {'Hindi': 'hi-IN', 'English': 'en-US', 'Marathi': 'mr-IN', 'Tamil': 'ta-IN', 'Gujarati': 'gu-IN', 'Punjabi': 'pa-IN', 'Bengali': 'bn-IN'}; recognition.lang = langCodes[document.getElementById('language').value] || 'en-US'; var micBtn = document.getElementById('micBtn');
-            recognition.onstart = function() { micBtn.classList.add('mic-active'); }; recognition.onresult = function(e) { document.getElementById('queryBox').value = e.results[0][0].transcript; micBtn.classList.remove('mic-active'); }; recognition.onend = function() { micBtn.classList.remove('mic-active'); }; recognition.start();
-        } else { alert("Voice input requires Chrome browser."); }
-    }
-</script>
+
+        <script>
+            function applyTranslations(langCode) {
+                if (!krishiTranslations || !krishiTranslations[langCode]) return;
+                const elements = document.querySelectorAll('[data-i18n]');
+                elements.forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (krishiTranslations[langCode][key]) {
+                        el.innerText = krishiTranslations[langCode][key];
+                    }
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const savedLang = localStorage.getItem('krishi_lang');
+                if (savedLang) {
+                    document.getElementById('globalLang').value = savedLang;
+                    applyTranslations(savedLang);
+                }
+                const savedLat = localStorage.getItem('krishi_lat');
+                const savedLocText = localStorage.getItem('krishi_loc_text');
+                if (savedLat) {
+                    document.getElementById('globalLocBtn').innerHTML = `<i class="fas fa-check"></i> <span>${savedLocText || (krishiTranslations[savedLang || 'en']?.loc_saved || 'Location Saved')}</span>`;
+                    document.getElementById('globalLocBtn').style.background = '#4caf50';
+                }
+            });
+
+            function saveGlobalSettings() {
+                const lang = document.getElementById('globalLang').value;
+                localStorage.setItem('krishi_lang', lang);
+                applyTranslations(lang);
+            }
+
+            async function detectGlobalLocation() {
+                const btn = document.getElementById('globalLocBtn');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        async (pos) => {
+                            const lat = pos.coords.latitude;
+                            const lng = pos.coords.longitude;
+                            localStorage.setItem('krishi_lat', lat);
+                            localStorage.setItem('krishi_lng', lng);
+                            try {
+                                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                                const data = await res.json();
+                                const address = data.address || {};
+                                const locality = address.village || address.town || address.city || address.county || address.state_district || "";
+                                const state = address.state || "";
+
+                                let readableText = locality ? `${locality}, ${state}` : state;
+                                if (!readableText) readableText = "Location Saved";
+
+                                localStorage.setItem('krishi_loc_text', readableText);
+                                btn.innerHTML = `<i class="fas fa-check"></i> <span>${readableText}</span>`;
+                            } catch (e) {
+                                localStorage.setItem('krishi_loc_text', 'Location Saved');
+                                btn.innerHTML = '<i class="fas fa-check"></i> Location Saved';
+                            }
+                            btn.style.background = '#4caf50';
+                        },
+                        (err) => { btn.innerHTML = '<i class="fas fa-times"></i> Error'; btn.style.background = '#f44336'; },
+                        { timeout: 5000 }
+                    );
+                } else {
+                    btn.innerHTML = '<i class="fas fa-times"></i> Not Supported';
+                }
+            }
+        </script>
+
+        <div class="nav-grid">
+            <a href="/kisan" class="nav-card">
+                <i class="fas fa-seedling"></i>
+                <div class="card-title" data-i18n="kisan_title">KisanShayak AI</div>
+                <div class="card-desc" data-i18n="kisan_desc">Crop Disease & Care</div>
+            </a>
+
+            <a href="/pashu" class="nav-card">
+                <i class="fa-solid fa-cow custom-cow-icon"></i>
+                <div class="card-title" data-i18n="pashu_title">Pashu Sahayak AI</div>
+                <div class="card-desc" data-i18n="pashu_desc">Cattle Health & Care</div>
+            </a>
+
+            <a href="/rakshak" class="nav-card">
+                <i class="fas fa-shield-alt"></i>
+                <div class="card-title" data-i18n="rakshak_title">Krishi Rakshak</div>
+                <div class="card-desc" data-i18n="rakshak_desc">Farming Insurance & Cost Analysis</div>
+            </a>
+
+            <a href="/weather" class="nav-card">
+                <i class="fas fa-cloud-sun-rain"></i>
+                <div class="card-title" data-i18n="weather_title">Dharti Chakra</div>
+                <div class="card-desc" data-i18n="weather_desc">Weather, Decisions & Alerts</div>
+            </a>
+        </div>
+
+        <p class="footer-text">
+            © 2026 Paaras Shemrudkar & Prachi Sharma (Owners of Krishi Shayak AI). All rights reserved.
+        </p>
+    </div>
 </body>
+
 </html>

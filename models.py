@@ -19,3 +19,5 @@ class Diagnosis(db.Model):
     ai_diagnosis = db.Column(db.Text)
     audio_path = db.Column(db.String(255)) # Path to the generated MP3
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # © 2026 Paaras Shemrudkar & Prachi Sharma (Owners of KisanMitra AI). All rights reserved.
