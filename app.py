@@ -22,6 +22,9 @@ os.makedirs('static/audio', exist_ok=True)
 
 db.init_app(app)
 
+with app.app_context():
+    db.create_all()
+
 agent = None
 pashu_agent = None
 rakshak_agent = None
