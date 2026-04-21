@@ -47,6 +47,9 @@ class KisanShayakAgent(BaseAgent):
             - Return ONLY a valid JSON object. No intro text.
             - **Enclose ALL KEYS and ALL VALUES in double quotes.**
             - Translate ALL strings to {language}.
+            - You MUST translate the literal string VALUES of 'risk', 'cost', and 'timeline' into the requested {language}.
+            - The 'type' key MUST always be strictly the English word 'Organic' or 'Chemical' so backend logic works. You MUST translate that word into the requested {language} and place it in the new 'localized_type' key.
+            - You MUST provide exactly 3 YouTube search queries in the remedies_video_queries array and exactly 4 product recommendations in the products array.
             
             JSON Structure:
             {{
@@ -67,8 +70,8 @@ class KisanShayakAgent(BaseAgent):
                 }},
                 "remedies_video_queries": ["Query 1", "Query 2", "Query 3"],
                 "products": [ 
-                    {{ "name": "Organic Product Name", "type": "Organic" }},
-                    {{ "name": "Chemical Product Name", "type": "Chemical" }}
+                    {{ "name": "Organic Product Name", "type": "Organic", "localized_type": "Translated type here" }},
+                    {{ "name": "Chemical Product Name", "type": "Chemical", "localized_type": "Translated type here" }}
                 ],
                 "expert_contacts": [
                     {{ "name": "KVK/Officer Name", "role": "Role", "contact": "Phone", "location": "City" }},

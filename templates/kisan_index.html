@@ -33,8 +33,8 @@
 <body>
 <div id="loading-overlay">
     <div class="breathing-icon">🌾</div>
-    <h3 style="color: #2e7d32; margin-top: 10px;">Analyzing Crop Health...</h3>
-    <p>Please wait while KisanShayak AI diagnoses the issue.</p>
+    <h3 style="color: #2e7d32; margin-top: 10px;" data-i18n="load_title_kisan">Analyzing Crop Health...</h3>
+    <p data-i18n="load_desc_kisan">Please wait while KisanShayak AI diagnoses the issue.</p>
 </div>
 <div id="camera-modal">
     <span class="close-camera" onclick="stopCamera()">×</span>
@@ -66,7 +66,7 @@
         </div>
         <div class="input-group">
             <label><i class="fas fa-map-marker-alt"></i> <span data-i18n="loc_label">Location (State/Region)</span>:</label>
-            <input type="text" name="location" id="location" placeholder="E.g., Anand, Gujarat" required>
+            <input type="text" name="location" id="location" placeholder="E.g., Anand, Gujarat" data-i18n-placeholder="loc_placeholder" required>
         </div>
         <div class="input-group">
             <label><i class="fas fa-camera"></i> <span data-i18n="upload_label">Upload Photo (फोटो लें)</span>:</label>
@@ -77,7 +77,7 @@
         <div class="input-group">
             <label><i class="fas fa-comment-medical"></i> <span data-i18n="desc_label">Describe Issue (समस्या बताएं)</span>:</label>
             <div class="voice-box">
-                <textarea name="query" id="queryBox" placeholder="Optional: E.g., 'Leaves are turning yellow'"></textarea>
+                <textarea name="query" id="queryBox" placeholder="Optional: E.g., 'Leaves are turning yellow'" data-i18n-placeholder="query_placeholder"></textarea>
                 <button type="button" class="mic-btn" id="micBtn" onclick="startDictation()">🎤</button>
             </div>
         </div>
@@ -87,12 +87,13 @@
 <script>
     function applyTranslations(langCode) {
         if (!krishiTranslations || !krishiTranslations[langCode]) return;
-        const elements = document.querySelectorAll('[data-i18n]');
-        elements.forEach(el => {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.getAttribute('data-i18n');
-            if (krishiTranslations[langCode][key]) {
-                el.innerText = krishiTranslations[langCode][key];
-            }
+            if (krishiTranslations[langCode][key]) el.innerText = krishiTranslations[langCode][key];
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            if (krishiTranslations[langCode][key]) el.placeholder = krishiTranslations[langCode][key];
         });
     }
 
@@ -174,7 +175,7 @@
     function previewImage(event) { if (event.target.files[0]) { document.getElementById('imgPreview').src = URL.createObjectURL(event.target.files[0]); document.getElementById('imgPreview').style.display = 'block'; } }
     function startDictation() {
         if (window.hasOwnProperty('webkitSpeechRecognition')) {
-            var recognition = new webkitSpeechRecognition(); var langCodes = {'Hindi': 'hi-IN', 'English': 'en-US', 'Marathi': 'mr-IN', 'Tamil': 'ta-IN', 'Gujarati': 'gu-IN', 'Punjabi': 'pa-IN', 'Bengali': 'bn-IN'}; recognition.lang = langCodes[document.getElementById('language').value] || 'en-US'; var micBtn = document.getElementById('micBtn');
+            var recognition = new webkitSpeechRecognition(); var langCodes = {'hi': 'hi-IN', 'en': 'en-US', 'mr': 'mr-IN', 'ta': 'ta-IN', 'gu': 'gu-IN', 'pa': 'pa-IN', 'bn': 'bn-IN', 'te': 'te-IN', 'kn': 'kn-IN', 'ml': 'ml-IN'}; recognition.lang = langCodes[document.getElementById('language').value] || 'en-US'; var micBtn = document.getElementById('micBtn');
             recognition.onstart = function() { micBtn.classList.add('mic-active'); }; recognition.onresult = function(e) { document.getElementById('queryBox').value = e.results[0][0].transcript; micBtn.classList.remove('mic-active'); }; recognition.onend = function() { micBtn.classList.remove('mic-active'); }; recognition.start();
         } else { alert("Voice input requires Chrome browser."); }
     }

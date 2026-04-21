@@ -28,7 +28,7 @@ class BaseAgent:
         print(f"🔄 Connecting to Vertex AI (Project: {project_id}, Region: {location})...")
         try:
             self.client = genai.Client(vertexai=True, project=project_id, location=location)
-            self.model_name = "gemini-2.5-flash"
+            self.model_name = "gemini-3.1-flash-lite-preview"
             print(f"✅ BaseAgent initialized using: {self.model_name}")
         except Exception as e:
             print(f"❌ Failed to initialize Vertex AI Client: {e}")
