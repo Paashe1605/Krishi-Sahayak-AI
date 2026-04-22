@@ -1,0 +1,67 @@
+<style>
+    body { padding-top: 70px; } /* Prevents content from hiding under the navbar */
+    .krishi-topbar {
+        position: fixed;
+        top: 0; left: 0; width: 100%;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 30px;
+        z-index: 9999;
+        box-sizing: border-box;
+        border-bottom: 1px solid rgba(46, 125, 50, 0.1);
+    }
+    .krishi-topbar .brand {
+        text-decoration: none;
+        font-size: 1.4em;
+        font-weight: 800;
+        color: #2e7d32;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        letter-spacing: -0.5px;
+    }
+    .krishi-topbar .home-btn {
+        background: #e8f5e9;
+        color: #2e7d32;
+        text-decoration: none;
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-weight: bold;
+        font-size: 0.95em;
+        transition: all 0.3s ease;
+        border: 1px solid #c8e6c9;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .krishi-topbar .home-btn:hover {
+        background: #2e7d32;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);
+    }
+    
+    @media (max-width: 600px) {
+        .krishi-topbar { padding: 12px 15px; }
+        .krishi-topbar .brand span { display: none; } /* Hide text on mobile, keep logo */
+        .krishi-topbar .home-btn span { display: none; } /* Hide text on mobile, keep icon */
+        .krishi-topbar .home-btn { padding: 10px; border-radius: 50%; }
+    }
+</style>
+
+<div class="krishi-topbar" data-html2canvas-ignore="true">
+    <a href="/" class="brand">
+        <i class="fas fa-leaf"></i> <span data-i18n="nav_brand">Krishi Shayak AI</span>
+    </a>
+    
+    <div class="nav-links">
+        <a href="/" class="home-btn">
+            <i class="fas fa-home"></i> <span data-i18n="nav_home">Dashboard</span>
+        </a>
+    </div>
+</div>

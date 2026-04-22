@@ -85,6 +85,8 @@ class DhartiChakraAgent(BaseAgent):
                 ],
                 "audio_script": "A short conversational summary of weather and soil advice."
             }}
+
+            NUCLEAR LANGUAGE RULE: You are STRICTLY FORBIDDEN from outputting any English characters (A-Z) in your JSON string values unless the requested language is English. You MUST natively translate crop names and varieties (e.g., translate 'Okra - Parbhani Kranti' entirely into the requested regional script). NO ENGLISH PARENTHESES ALLOWED.
             """
 
             # --- ATTEMPT 1: SEARCH MODE ---
@@ -120,10 +122,11 @@ class DhartiChakraAgent(BaseAgent):
             print(f"❌ Critical Error in Dharti Agent: {e}")
             return self.get_fallback_data(str(e))
 
-    def generate_farm_plan(self, existing_data, land_area, land_unit, language="Hindi"):
+    def generate_farm_plan(self, existing_data, land_area, land_unit, language="Hindi", selected_crops=None):
         try:
+            crops_context = f" specifically for these selected crops: {', '.join(selected_crops)}" if selected_crops else ""
             master_prompt = f"""
-            You are a Master Agronomist. Read the following soil & weather report: {existing_data}. The farmer has {land_area} {land_unit} of land. Generate a highly actionable Kheti Ayojan (Farming Plan).
+            You are a Master Agronomist. Read the following soil & weather report: {existing_data}. The farmer has {land_area} {land_unit} of land{crops_context}. Generate a highly actionable Kheti Ayojan (Farming Plan).
 
             CRITICAL: Translate EVERY dynamic string value into the requested user language ({language}). Return ONLY raw, valid JSON. DO NOT use markdown formatting (```json). You MUST properly escape all double quotes inside strings.
 
@@ -136,8 +139,8 @@ class DhartiChakraAgent(BaseAgent):
                 ],
                 "estimated_yield": "Predicted harvest output",
                 "recommended_products": [
-                    {{"name": "Product Name", "type": "Organic"}},
-                    {{"name": "Product Name", "type": "Chemical"}}
+                    {{"name": "Product Name", "type": "Organic", "display_tag": "Localized type (e.g. जैविक / Organic)"}},
+                    {{"name": "Product Name", "type": "Chemical", "display_tag": "Localized type"}}
                 ],
                 "setup_videos": [
                     "YouTube search query 1",
@@ -146,6 +149,8 @@ class DhartiChakraAgent(BaseAgent):
                 ],
                 "audio_script": "A 2-sentence vocal summary of the farming plan."
             }}
+
+            NUCLEAR LANGUAGE RULE: You are STRICTLY FORBIDDEN from using English characters (A-Z) in your JSON values. All `setup_videos` YouTube search queries MUST be written 100% in the requested regional language script. If the user language is Gujarati, the video query must be in Gujarati text.
             """
             
             # The type must be strictly "Organic" or "Chemical" in English if the backend relies on it, but the prompt says just output type.
@@ -160,14 +165,14 @@ class DhartiChakraAgent(BaseAgent):
             
             # PARSER ARMOR
             raw_text = raw_text.replace('```json', '').replace('```', '').strip()
-            data = self.clean_json_output(raw_text)
+            plan_data = self.clean_json_output(raw_text)
             
-            if data and "seed_requirements" in data:
+            if plan_data and "seed_requirements" in plan_data:
                 audio_path = None
-                if "audio_script" in data and data["audio_script"]:
-                    audio_path = self.generate_audio(data["audio_script"], language)
-                data["audio_path"] = audio_path
-                return data
+                if "audio_script" in plan_data and plan_data["audio_script"]:
+                    audio_path = self.generate_audio(plan_data["audio_script"], language)
+                plan_data["audio_path"] = audio_path
+                return plan_data
             
             return {"error": "Failed to generate valid farm plan JSON."}
             

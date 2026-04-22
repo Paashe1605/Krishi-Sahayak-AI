@@ -21,10 +21,11 @@
     <script src="/static/js/translations.js"></script>
 </head>
 <body>
+{% include 'navbar.html' %}
 <div id="loading-overlay">
     <div class="breathing-icon"><i class="fa-solid fa-cloud-sun-rain custom-icon"></i></div>
     <h3 style="color: #0288D1; margin-top: 10px;"><span data-i18n="dharti_load_title">Fetching Live IMD Weather & Soil Data...</span></h3>
-    <p data-i18n="load_desc_dharti">Please wait while Dharti Chakra analyzes the data.</p>
+    <p class="mt-2" data-i18n="dharti_loader_desc">Please wait while Dharti Chakra analyzes the data.</p>
 </div>
 <div class="container">
     <div class="logo"><i class="fa-solid fa-cloud-sun-rain custom-icon"></i></div>
@@ -58,7 +59,7 @@
             <p id="fileNamePreview" style="display:none; color: #0288D1; font-weight: bold; margin-top: 10px;"></p>
             <img id="imgPreview" style="display:none; width: 100%; margin-top: 10px; border-radius: 10px; border: 2px solid #eee;">
         </div>
-        <button type="submit" class="submit-btn" data-i18n="btn_analyze_weather">Analyze Weather & Soil</button>
+        <button type="submit" class="submit-btn" id="submitBtn" data-i18n="dharti_btn_analyze">Analyze Weather & Soil</button>
     </form>
 </div>
 <script>

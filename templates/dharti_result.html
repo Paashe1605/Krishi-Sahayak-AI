@@ -114,6 +114,7 @@
     </style>
 </head>
 <body>
+{% include 'navbar.html' %}
     <div class="header" id="webHeader">
         <h1>🌍 Dharti Chakra Report</h1>
         <div class="action-bar" data-html2canvas-ignore="true">
@@ -144,9 +145,9 @@
                 {% endif %}
                 
                 <div class="diagnosis-text" style="background:#fff3e0; padding:10px; border-radius:8px; margin-bottom:10px; border-left:4px solid #ff9800;">
-                    <h3 style="margin-top:0; color:#e65100;"><span data-i18n="dharti_condition">Condition: </span>{{ data.weather_alerts.condition }}</h3>
-                    <p style="margin-bottom:8px;"><b><span data-i18n="dharti_rain_prob">Rain Probability:</span></b> {{ data.weather_alerts.rain_probability }}</p>
-                    <p style="color:#d32f2f; margin: 4px 0;"><b><span data-i18n="dharti_alerts">Alerts:</span></b> {{ data.weather_alerts.alerts }}</p>
+                    <h3 style="margin-top:0; color:#e65100;"><strong data-i18n="lbl_condition">Condition:</strong> {{ data.weather_alerts.condition }}</h3>
+                    <p style="margin-bottom:8px;"><strong data-i18n="lbl_rain_prob">Rain Probability:</strong> {{ data.weather_alerts.rain_probability }}</p>
+                    <p style="color:#d32f2f; margin: 4px 0;"><strong data-i18n="lbl_alerts">Alerts:</strong> {{ data.weather_alerts.alerts }}</p>
                 </div>
             </div>
             
@@ -165,8 +166,8 @@
             <h2>🌍 <span data-i18n="heading_soil">Soil & Terrain Profile</span></h2>
             <div class="scrollable-content" style="padding-top: 10px;">
                 <div style="background: #fafafa; border: 1px solid #eee; border-radius: 10px; padding: 15px; page-break-inside: avoid;">
-                    <h3 style="color: var(--primary); margin-top: 0;"><span data-i18n="dharti_soil_type">Soil Type:</span> {{ data.soil_profile.soil_type }}</h3>
-                    <p style="color: #444; line-height: 1.5; margin-bottom: 0;"><b><span data-i18n="dharti_characteristics">Characteristics:</span></b><br>{{ data.soil_profile.characteristics }}</p>
+                    <h3 style="color: var(--primary); margin-top: 0;"><strong data-i18n="lbl_soil_type">Soil Type:</strong> {{ data.soil_profile.soil_type }}</h3>
+                    <p style="color: #444; line-height: 1.5; margin-bottom: 0;"><strong data-i18n="lbl_characteristics">Characteristics:</strong><br>{{ data.soil_profile.characteristics }}</p>
                 </div>
             </div>
         </div>
@@ -176,11 +177,11 @@
             <h2>💧 <span data-i18n="heading_irrigation">Irrigation Planner</span></h2>
             <div class="scrollable-content" style="padding-top: 10px;">
                 <div style="background: #e3f2fd; border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-                    <h4 style="margin: 0 0 5px 0; color: #0d47a1;"><span data-i18n="dharti_recommendation">Recommendation</span></h4>
+                    <h6 data-i18n="lbl_recommendation" style="margin: 0 0 5px 0; color: #0d47a1;">Recommendation</h6>
                     <p style="margin: 0; color: #333;">{{ data.irrigation_planner.recommendation }}</p>
                 </div>
                 <div style="background: #fff8e1; border-left: 4px solid var(--accent); border-radius: 8px; padding: 15px;">
-                    <h4 style="margin: 0 0 5px 0; color: #f57f17;"><span data-i18n="dharti_schedule">Schedule</span></h4>
+                    <h6 data-i18n="lbl_schedule" style="margin: 0 0 5px 0; color: #f57f17;">Schedule</h6>
                     <p style="margin: 0; color: #333;">{{ data.irrigation_planner.schedule }}</p>
                 </div>
             </div>
@@ -194,7 +195,7 @@
                     {% for crop in data.crop_suitability %}
                     <div class="scheme-card">
                         <div class="scheme-name" style="color: #2e7d32; font-size: 1.1em;">{{ crop.crop_name }}</div>
-                        <div class="scheme-eligibility" style="margin-top: 5px;"><b><span data-i18n="dharti_reason">Reason:</span></b> {{ crop.reason }}</div>
+                        <div class="scheme-eligibility" style="margin-top: 5px;"><strong data-i18n="rakshak_reason">Reason:</strong> {{ crop.reason }}</div>
                     </div>
                     {% endfor %}
                 {% else %}
@@ -263,6 +264,19 @@
         <!-- Card 7: Kheti Ayojan (Farming Plan) -->
         <div class="card" style="grid-column: 1 / -1; height: auto;">
             <h3 data-i18n="kheti_ayojan_title" style="color: var(--primary); margin-top: 0; border-bottom: 2px solid #e3f2fd; padding-bottom: 8px;">Kheti Ayojan (Farming Plan)</h3>
+            
+            <div class="mb-3" style="margin-top: 15px;">
+                <label data-i18n="kheti_select_crop" class="form-label" style="font-weight: bold; margin-bottom: 8px; display: block;">Select Crop(s) for Plan:</label>
+                <div id="crop_checkboxes" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    {% for crop in data.crop_suitability %}
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input kheti-crop-cb" type="checkbox" value="{{ crop.crop_name }}" id="cb_{{ loop.index }}">
+                        <label class="form-check-label" for="cb_{{ loop.index }}">{{ crop.crop_name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; align-items: center;">
                 <input type="number" id="land_area" placeholder="e.g. 5" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; flex: 1; min-width: 120px;" min="0" step="any">
                 <select id="land_unit" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; flex: 1; min-width: 120px;">
@@ -332,6 +346,14 @@
             const landArea = document.getElementById('land_area').value;
             const landUnit = document.getElementById('land_unit').value;
             
+            const selectedCrops = Array.from(document.querySelectorAll('.kheti-crop-cb:checked')).map(cb => cb.value);
+            if (selectedCrops.length === 0) {
+                const langCode = localStorage.getItem('krishi_lang') || 'hi';
+                const errorMsg = (krishiTranslations && krishiTranslations[langCode] && krishiTranslations[langCode]['kheti_alert_crop']) ? krishiTranslations[langCode]['kheti_alert_crop'] : "Please select at least one crop!";
+                alert(errorMsg);
+                return;
+            }
+
             if (!landArea || !landUnit) {
                 alert("Please enter the land size and unit.");
                 return;
@@ -353,7 +375,8 @@
                     result_id: {{ diagnosis.id }},
                     land_area: landArea,
                     land_unit: landUnit,
-                    language: language
+                    language: language,
+                    selected_crops: selectedCrops
                 })
             })
             .then(response => response.json())
@@ -402,9 +425,10 @@
                         const bgColor = isOrg ? '#e8f5e9' : '#ffebee';
                         const borderColor = isOrg ? '#81c784' : '#e57373';
                         const textColor = isOrg ? '#2e7d32' : '#c62828';
+                        const displayTag = prod.display_tag || prod.type;
                         html += `
                             <div style="background: ${bgColor}; border: 1px solid ${borderColor}; color: ${textColor}; padding: 8px 12px; border-radius: 20px; font-size: 0.9em; font-weight: bold;">
-                                <a href="https://www.google.com/search?q=${encodeURIComponent(prod.name)}" target="_blank" style="color: inherit; text-decoration: none;">${prod.name}</a> (${prod.type})
+                                <a href="https://www.google.com/search?q=${encodeURIComponent(prod.name)}" target="_blank" style="color: inherit; text-decoration: none;">${prod.name}</a> (${displayTag})
                             </div>
                         `;
                     });

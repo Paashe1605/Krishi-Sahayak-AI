@@ -254,6 +254,7 @@ def generate_kheti_ayojan():
     land_area = req_data.get('land_area')
     land_unit = req_data.get('land_unit')
     language = req_data.get('language', 'Hindi')
+    selected_crops = req_data.get('selected_crops', [])
 
     diagnosis_record = db.session.get(Diagnosis, result_id)
     if not diagnosis_record:
@@ -262,7 +263,7 @@ def generate_kheti_ayojan():
     if not dharti_agent:
         return jsonify({'error': 'Dharti AI Agent is offline'}), 500
 
-    plan_data = dharti_agent.generate_farm_plan(diagnosis_record.ai_diagnosis, land_area, land_unit, language)
+    plan_data = dharti_agent.generate_farm_plan(diagnosis_record.ai_diagnosis, land_area, land_unit, language, selected_crops)
     return jsonify(plan_data)
 
 if __name__ == '__main__':
