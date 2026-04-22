@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dharti Chakra Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="/static/js/translations.js"></script>
+    <style>
+        :root { --primary: #0288D1; --bg: #f4f9f4; --card-bg: white; --accent: #FBC02D; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { color: var(--primary); font-size: 2.2em; margin: 0; }
+        .action-bar { margin-top: 10px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .nav-btn { display: inline-block; text-decoration: none; color: #555; background: #e0e0e0; padding: 8px 15px; border-radius: 20px; transition: 0.3s; font-size: 0.9em; cursor: pointer; border: none; }
+        .nav-btn:hover { background: #d0d0d0; }
+        .download-btn { background: var(--primary); color: white; }
+        .download-btn:hover { background: #0277bd; }
+
+        /* --- PDF BRANDING HEADER (Hidden by default) --- */
+        .pdf-only-header { margin-top: 0 !important; padding-top: 0 !important; }
+        .pdf-mode .card:first-of-type { margin-top: 0 !important; }
+        .pdf-only-header {
+            display: none; /* Hidden on website */
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            page-break-inside: avoid;
+            page-break-before: auto;
+        }
+        .pdf-only-header .logo-icon { font-size: 4em; display: block; margin-bottom: 10px; color: var(--primary); }
+        .pdf-only-header h1 { color: var(--primary); margin: 0; font-size: 2.5em; }
+        .pdf-only-header p { color: #666; margin: 5px 0 0; font-size: 1.1em; }
+
+        /* --- BROWSER VIEW --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .card {
+            background: var(--card-bg); border-radius: 15px; padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            display: flex; flex-direction: column;
+            height: 400px; /* Fixed height for Browser */
+            overflow: hidden; 
+        }
+
+        /* --- PDF MODE: HYBRID LAYOUT --- */
+        .grid-container.pdf-mode {
+            display: block !important;
+            width: 100% !important;
+        }
+        
+        /* Show the header ONLY in PDF mode */
+        .grid-container.pdf-mode .pdf-only-header {
+            display: block !important; 
+        }
+        
+        .card.pdf-mode {
+            height: auto !important;       
+            overflow: visible !important;  
+            margin-bottom: 30px !important; 
+            page-break-inside: auto !important;
+            page-break-before: auto !important;
+            border: 1px solid #ccc !important;
+            box-shadow: none !important;
+            display: block !important;
+        }
+
+        .card.pdf-mode .uploaded-img {
+            height: auto !important;
+            max-height: 220px !important;
+            width: 100% !important;
+            object-fit: contain !important;
+            margin-bottom: 20px !important;
+            border: none !important;
+        }
+
+        h2 { color: var(--primary); border-bottom: 2px solid #e3f2fd; padding-bottom: 8px; margin-top: 0; font-size: 1.3em; margin-bottom: 15px; }
+
+        .scrollable-content { 
+            flex-grow: 1; 
+            overflow-y: auto; 
+            padding-right: 5px; 
+            margin-bottom: 10px; 
+        }
+        .scrollable-content::-webkit-scrollbar { width: 6px; }
+        .scrollable-content::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 4px; }
+
+        .diagnosis-text { white-space: pre-wrap; line-height: 1.6; color: #333; font-size: 0.95em; }
+        .uploaded-img { width: 100%; height: 150px; object-fit: cover; border-radius: 10px; margin-bottom: 15px; border: 1px solid #eee; }
+        .audio-container { margin-top: auto; padding-top: 10px; border-top: 1px solid #f0f0f0; background: white; }
+        
+        .expert-item { background: #fafafa; border-radius: 8px; padding: 10px; margin-bottom: 8px; border: 1px solid #eee; display: flex; gap: 10px; align-items: center; }
+        .expert-actions { margin-left: auto; display: flex; flex-direction: column; gap: 4px; }
+        .action-btn { text-decoration: none; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; text-align: center; cursor: pointer; }
+        .map-btn { background: #e3f2fd; color: #0288D1; border: 1px solid #bbdefb; }
+        .expert-link { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 0.95em; transition: 0.2s; }
+        .expert-link:hover { text-decoration: underline; color: #0277bd; }
+
+        .scheme-card { background: #fff8e1; border-left: 4px solid var(--accent); padding: 10px; border-radius: 8px; margin-bottom: 10px; }
+        .scheme-name { font-weight: bold; color: #d84315; margin-bottom: 5px; }
+        .scheme-eligibility { font-size: 0.85em; color: #555; }
+
+        #btn_generate_plan:hover { background: #0277bd !important; }
+
+        @media (max-width: 768px) { .grid-container { grid-template-columns: 1fr; } .card { height: auto; max-height: 500px; } }
+    </style>
+</head>
+<body>
+    <div class="header" id="webHeader">
+        <h1>🌍 Dharti Chakra Report</h1>
+        <div class="action-bar" data-html2canvas-ignore="true">
+            <a href="/weather" class="nav-btn">← New Analysis</a>
+            <button onclick="downloadPDF()" class="nav-btn download-btn">📥 Download Report (PDF)</button>
+        </div>
+    </div>
+
+    <div id="reportContent" class="grid-container">
+        
+        <div class="pdf-only-header">
+            <span class="logo-icon"><i class="fas fa-cloud-sun-rain"></i></span>
+            <h1>Dharti Chakra Report PDF</h1>
+            <p>Weather, Geology & Alerts Analysis</p>
+        </div>
+
+        <!-- Card 1: Live Weather & Alerts -->
+        <div class="card">
+            <h2>🚨 <span data-i18n="heading_weather">Live Weather & Alerts</span></h2>
+            <div class="scrollable-content">
+                {% if diagnosis.image_filename.endswith('.pdf') %}
+                    <div style="text-align:center; padding: 20px; background: #e3f2fd; border-radius: 10px; margin-bottom: 15px; color: var(--primary); font-weight: bold;">
+                        <i class="fas fa-file-pdf" style="font-size: 3em; margin-bottom: 10px;"></i><br>
+                        <span data-i18n="dharti_pdf_analyzed">PDF Report Analyzed</span>
+                    </div>
+                {% else %}
+                    <img src="/static/uploads/{{ diagnosis.image_filename }}" class="uploaded-img" alt="Uploaded Document">
+                {% endif %}
+                
+                <div class="diagnosis-text" style="background:#fff3e0; padding:10px; border-radius:8px; margin-bottom:10px; border-left:4px solid #ff9800;">
+                    <h3 style="margin-top:0; color:#e65100;"><span data-i18n="dharti_condition">Condition: </span>{{ data.weather_alerts.condition }}</h3>
+                    <p style="margin-bottom:8px;"><b><span data-i18n="dharti_rain_prob">Rain Probability:</span></b> {{ data.weather_alerts.rain_probability }}</p>
+                    <p style="color:#d32f2f; margin: 4px 0;"><b><span data-i18n="dharti_alerts">Alerts:</span></b> {{ data.weather_alerts.alerts }}</p>
+                </div>
+            </div>
+            
+            {% if diagnosis.audio_path %}
+            <div class="audio-container">
+                <audio controls style="width:100%; height: 35px;">
+                    <source src="{{ diagnosis.audio_path }}" type="audio/mpeg">
+                </audio>
+                <a href="{{ diagnosis.audio_path }}" target="_blank" style="font-size:0.8em; color:#666; text-decoration:none; display:none;" class="pdf-audio-link">🎵 Click to Listen (Audio)</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Card 2: Soil & Terrain Profile -->
+        <div class="card">
+            <h2>🌍 <span data-i18n="heading_soil">Soil & Terrain Profile</span></h2>
+            <div class="scrollable-content" style="padding-top: 10px;">
+                <div style="background: #fafafa; border: 1px solid #eee; border-radius: 10px; padding: 15px; page-break-inside: avoid;">
+                    <h3 style="color: var(--primary); margin-top: 0;"><span data-i18n="dharti_soil_type">Soil Type:</span> {{ data.soil_profile.soil_type }}</h3>
+                    <p style="color: #444; line-height: 1.5; margin-bottom: 0;"><b><span data-i18n="dharti_characteristics">Characteristics:</span></b><br>{{ data.soil_profile.characteristics }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Irrigation Planner -->
+        <div class="card">
+            <h2>💧 <span data-i18n="heading_irrigation">Irrigation Planner</span></h2>
+            <div class="scrollable-content" style="padding-top: 10px;">
+                <div style="background: #e3f2fd; border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <h4 style="margin: 0 0 5px 0; color: #0d47a1;"><span data-i18n="dharti_recommendation">Recommendation</span></h4>
+                    <p style="margin: 0; color: #333;">{{ data.irrigation_planner.recommendation }}</p>
+                </div>
+                <div style="background: #fff8e1; border-left: 4px solid var(--accent); border-radius: 8px; padding: 15px;">
+                    <h4 style="margin: 0 0 5px 0; color: #f57f17;"><span data-i18n="dharti_schedule">Schedule</span></h4>
+                    <p style="margin: 0; color: #333;">{{ data.irrigation_planner.schedule }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Seasonal Crop Suitability -->
+        <div class="card">
+            <h2>🌱 <span data-i18n="heading_crops">Seasonal Crop Suitability</span></h2>
+            <div class="scrollable-content">
+                {% if data.crop_suitability|length > 0 %}
+                    {% for crop in data.crop_suitability %}
+                    <div class="scheme-card">
+                        <div class="scheme-name" style="color: #2e7d32; font-size: 1.1em;">{{ crop.crop_name }}</div>
+                        <div class="scheme-eligibility" style="margin-top: 5px;"><b><span data-i18n="dharti_reason">Reason:</span></b> {{ crop.reason }}</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: #666; font-style: italic;">No specific crop data available.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Card 5: Agri-News & Trends -->
+        <div class="card">
+            <h2>📰 <span data-i18n="heading_agri_news">Agri-News & Trends</span></h2>
+            <div class="scrollable-content">
+                {% if data.agri_news|length > 0 %}
+                    <ul style="list-style-type: none; padding-left: 0; margin-top: 5px;">
+                    {% for news in data.agri_news %}
+                        <li style="background: #fff; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: start; gap: 10px;">
+                            <i class="fas fa-newspaper" style="color: var(--primary); margin-top: 3px;"></i>
+                            <span style="font-size: 0.95em; color: #333; line-height: 1.4;">
+                                <a href="https://www.google.com/search?q={{ news | urlencode }}" target="_blank" style="text-decoration: none; color: inherit;">{{ news }} <i class="fas fa-external-link-alt" style="font-size: 0.8em; margin-left: 5px;"></i></a>
+                            </span>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p style="color: #666; font-style: italic;">No recent news found.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Card 6: Local Authorities -->
+        <div class="card">
+            <h2>🏛️ <span data-i18n="heading_local_auth">Local Authorities</span></h2>
+            <div class="scrollable-content">
+                {% if data.expert_contacts|length > 0 %}
+                    {% for expert in data.expert_contacts %}
+                    <div class="expert-item">
+                        <div style="background:#e3f2fd; padding:8px; border-radius:50%; color:var(--primary);">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div style="flex-grow:1;">
+                            <a href="https://www.google.com/search?q={{ expert.name }}+{{ expert.location }}" target="_blank" class="expert-link">
+                                {{ expert.name }} <i class="fas fa-external-link-alt" style="font-size:0.7em;"></i>
+                            </a>
+                            <div style="font-size:0.8em; color:#666; margin-top:2px;">{{ expert.role }}</div>
+                            <div style="font-size:0.75em; color:#888;">📍 {{ expert.location }}</div>
+                            <div style="font-size:0.8em; color:var(--primary); margin-top:2px; font-weight:bold;">
+                                <div style="display: flex; gap: 10px; align-items: center; margin-top: 6px;">
+                                    <a href="tel:{{ expert.contact }}" class="action-btn" style="background:#e3f2fd; color:#0288D1; text-decoration:none; border:1px solid #bbdefb;">📞 Call</a>
+                                    <button onclick="navigator.clipboard.writeText('{{ expert.contact }}'); alert('Contact Copied!');" class="action-btn" style="background:#f5f5f5; color:#333; border:1px solid #ddd;">📋 Copy</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="expert-actions">
+                            <a href="https://www.google.com/maps/search/?q={{ expert.location }}+{{ expert.name }}" target="_blank" class="action-btn map-btn">
+                                <i class="fas fa-map-marker-alt"></i> Map
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                     <p style="color: #666; font-style: italic;">No local authorities found near this location.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Card 7: Kheti Ayojan (Farming Plan) -->
+        <div class="card" style="grid-column: 1 / -1; height: auto;">
+            <h3 data-i18n="kheti_ayojan_title" style="color: var(--primary); margin-top: 0; border-bottom: 2px solid #e3f2fd; padding-bottom: 8px;">Kheti Ayojan (Farming Plan)</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; align-items: center;">
+                <input type="number" id="land_area" placeholder="e.g. 5" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; flex: 1; min-width: 120px;" min="0" step="any">
+                <select id="land_unit" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; flex: 1; min-width: 120px;">
+                    <option value="Acres">Acres</option>
+                    <option value="Hectares">Hectares</option>
+                    <option value="Bigha">Bigha</option>
+                    <option value="Guntha">Guntha</option>
+                </select>
+                <button id="btn_generate_plan" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; flex: 1; min-width: 150px; transition: 0.3s;" data-i18n="btn_generate_plan">Generate Plan</button>
+            </div>
+            <div id="kheti_results_container" style="margin-top: 15px;"></div>
+        </div>
+
+    </div>
+
+    <script>
+        function applyTranslations(langCode) {
+            if (!krishiTranslations || !krishiTranslations[langCode]) return;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (krishiTranslations[langCode][key]) el.innerText = krishiTranslations[langCode][key];
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (krishiTranslations[langCode][key]) el.placeholder = krishiTranslations[langCode][key];
+            });
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('krishi_lang') || 'hi';
+            applyTranslations(savedLang);
+        });
+
+        function downloadPDF() {
+            const container = document.getElementById('reportContent');
+            const cards = document.querySelectorAll('.card');
+            
+            // 1. Switch to PDF Layout
+            container.classList.add('pdf-mode');
+            cards.forEach(card => card.classList.add('pdf-mode'));
+
+            // 2. Show Audio Link
+            const audioLinks = document.querySelectorAll('.pdf-audio-link');
+            audioLinks.forEach(link => link.style.display = 'block');
+
+            const opt = {
+                margin:       0.2, 
+                filename:     'DhartiChakra_Weather_Report.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true }, 
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css'] } 
+            };
+
+            // 3. Generate & Download
+            html2pdf().set(opt).from(container).save().then(() => {
+                // 4. Restore Browser Layout
+                container.classList.remove('pdf-mode');
+                cards.forEach(card => card.classList.remove('pdf-mode'));
+                audioLinks.forEach(link => link.style.display = 'none');
+            });
+        }
+    </script>
+    <p style="text-align:center; font-size:0.8em; color:#888; margin-top:20px;">
+        © 2026 Paaras Shemrudkar & Prachi Sharma (Owners of Krishi Shayak AI). All rights reserved.</p>
+    <script>
+        document.getElementById('btn_generate_plan').addEventListener('click', function() {
+            const landArea = document.getElementById('land_area').value;
+            const landUnit = document.getElementById('land_unit').value;
+            
+            if (!landArea || !landUnit) {
+                alert("Please enter the land size and unit.");
+                return;
+            }
+            
+            const container = document.getElementById('kheti_results_container');
+            container.innerHTML = `<div style="text-align:center; padding: 20px;"><i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i><p data-i18n="kheti_loading" style="margin-top:10px; color:#555; font-weight:bold;">Architecting Farming Plan...</p></div>`;
+            
+            const langCode = localStorage.getItem('krishi_lang') || 'hi';
+            const langMap = { "hi": "Hindi", "en": "English", "mr": "Marathi", "ta": "Tamil", "gu": "Gujarati", "pa": "Punjabi", "bn": "Bengali", "te": "Telugu", "kn": "Kannada", "ml": "Malayalam" };
+            const language = langMap[langCode] || "Hindi";
+            
+            applyTranslations(langCode);
+            
+            fetch('/generate_kheti_ayojan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    result_id: {{ diagnosis.id }},
+                    land_area: landArea,
+                    land_unit: landUnit,
+                    language: language
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    container.innerHTML = `<p style="color: red; padding: 10px; background: #ffebee; border-radius: 5px;">Error: ${data.error}</p>`;
+                    return;
+                }
+                
+                let html = `
+                    <div style="background: #fafafa; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                        <h4 style="color: var(--primary); margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 5px;"><i class="fas fa-seedling"></i> <span data-i18n="kheti_seeds">Seed & Fertilizer Requirements</span></h4>
+                        <p style="color: #444; line-height: 1.5; margin-bottom: 0;">${data.seed_requirements}</p>
+                    </div>
+                    
+                    <div style="background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                        <h4 style="color: #2e7d32; margin-top: 0; border-bottom: 1px solid #c8e6c9; padding-bottom: 5px;"><i class="fas fa-tractor"></i> <span data-i18n="kheti_yield">Estimated Yield</span></h4>
+                        <p style="color: #1b5e20; line-height: 1.5; font-weight: bold; margin-bottom: 0;">${data.estimated_yield}</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;"><i class="fas fa-calendar-alt"></i> <span data-i18n="kheti_timeline">Timeline</span></h4>
+                        <ul style="list-style-type: none; padding-left: 0; margin-top: 0;">
+                `;
+                
+                if (data.timeline && data.timeline.length) {
+                    data.timeline.forEach(step => {
+                        html += `
+                            <li style="background: #fff; border-left: 4px solid var(--accent); padding: 10px 15px; margin-bottom: 8px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                                <strong style="color: #d84315;">${step.step_name}:</strong> <span style="color: #444;">${step.action}</span>
+                            </li>
+                        `;
+                    });
+                }
+                html += `</ul></div>`;
+                
+                html += `
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;"><i class="fas fa-box-open"></i> <span data-i18n="kheti_products">Recommended Products</span></h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                `;
+                
+                if (data.recommended_products && data.recommended_products.length) {
+                    data.recommended_products.forEach(prod => {
+                        const isOrg = prod.type && prod.type.toLowerCase() === 'organic';
+                        const bgColor = isOrg ? '#e8f5e9' : '#ffebee';
+                        const borderColor = isOrg ? '#81c784' : '#e57373';
+                        const textColor = isOrg ? '#2e7d32' : '#c62828';
+                        html += `
+                            <div style="background: ${bgColor}; border: 1px solid ${borderColor}; color: ${textColor}; padding: 8px 12px; border-radius: 20px; font-size: 0.9em; font-weight: bold;">
+                                <a href="https://www.google.com/search?q=${encodeURIComponent(prod.name)}" target="_blank" style="color: inherit; text-decoration: none;">${prod.name}</a> (${prod.type})
+                            </div>
+                        `;
+                    });
+                }
+                html += `</div></div>`;
+                
+                if (data.setup_videos && data.setup_videos.length) {
+                    html += `
+                        <div style="margin-bottom: 15px;">
+                            <h4 style="color: var(--primary); margin-bottom: 10px;"><i class="fab fa-youtube"></i> <span data-i18n="kheti_videos">Setup Videos</span></h4>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                    `;
+                    data.setup_videos.forEach(vid => {
+                        html += `
+                            <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(vid)}" target="_blank" style="text-decoration: none; color: #333; background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 6px; display: flex; align-items: center; transition: 0.2s;">
+                                <i class="fab fa-youtube" style="color: red; font-size: 1.2em; margin-right: 10px;"></i>
+                                ${vid}
+                            </a>
+                        `;
+                    });
+                    html += `</div></div>`;
+                }
+                if (data.audio_path) {
+                    html += `<div class="mt-3" style="margin-top: 15px;"><audio controls style="width: 100%; height: 40px;"><source src="${data.audio_path}" type="audio/mpeg">Your browser does not support the audio element.</audio></div>`;
+                }
+                
+                container.innerHTML = html;
+                applyTranslations(langCode);
+            })
+            .catch(err => {
+                container.innerHTML = `<p style="color: red; padding: 10px; background: #ffebee; border-radius: 5px;">Request failed: ${err}</p>`;
+            });
+        });
+    </script>
+</body>
+</html>

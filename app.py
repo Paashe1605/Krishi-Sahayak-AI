@@ -9,6 +9,7 @@ from models import db, Diagnosis
 from kisan_agent import KisanShayakAgent
 from pashu_agent import PashuSahayakAgent
 from rakshak_agent import KrishiRakshakAgent
+from dharti_agent import DhartiChakraAgent
 
 load_dotenv()
 
@@ -28,6 +29,7 @@ with app.app_context():
 agent = None
 pashu_agent = None
 rakshak_agent = None
+dharti_agent = None
 try:
     project_id = os.getenv('GOOGLE_CLOUD_PROJECT')
     location = os.getenv('GOOGLE_CLOUD_LOCATION')
@@ -37,6 +39,8 @@ try:
     print("✅ PashuSahayak Agent is Active")
     rakshak_agent = KrishiRakshakAgent(project_id, location)
     print("✅ KrishiRakshak Agent is Active")
+    dharti_agent = DhartiChakraAgent(project_id, location)
+    print("✅ DhartiChakra Agent is Active")
 except Exception as e:
     print(f"⚠️ Agent Offline: {e}")
 
@@ -58,7 +62,7 @@ def rakshak():
 
 @app.route('/weather')
 def weather():
-    return render_template('coming_soon.html', title="Dharti Chakra")
+    return render_template('dharti_index.html', title="Dharti Chakra")
 
 @app.route('/diagnose', methods=['POST'])
 def diagnose():
@@ -196,6 +200,70 @@ def show_rakshak_result(result_id):
         data = { "impact_summary": {"risk_level": "Unknown"}, "stats": {"financial_health_score":0}, "insurance_schemes": [], "expert_contacts": [] }
     
     return render_template('rakshak_result.html', diagnosis=diagnosis_record, data=data)
+
+@app.route('/diagnose_weather', methods=['POST'])
+def diagnose_weather():
+    if 'image' not in request.files: return jsonify({'error': 'No file provided'}), 400
+    file = request.files['image']
+    # DO NOT extract user_query per STRICT GUARDRAILS
+    language = request.form.get('language', 'Hindi')
+    location = request.form.get('location', 'India') 
+    lat = request.form.get('lat')
+    lng = request.form.get('lng')
+
+    if file.filename == '': return jsonify({'error': 'No file selected'}), 400
+
+    if file:
+        filename = secure_filename(f"{uuid.uuid4().hex[:8]}_{file.filename}")
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        if not dharti_agent: return jsonify({'error': 'Dharti AI Agent is offline'}), 500
+
+        analysis_data = dharti_agent.analyze_weather(filepath, language, location, lat, lng)
+        
+        audio_text = analysis_data.get('audio_script', 'Analysis complete.')
+        audio_url = dharti_agent.generate_audio(audio_text, language)
+
+        new_diagnosis = Diagnosis(
+            image_filename=filename,
+            user_query="Weather & Geological Analysis",
+            ai_diagnosis=json.dumps(analysis_data), 
+            audio_path=audio_url
+        )
+        db.session.add(new_diagnosis)
+        db.session.commit()
+
+        return jsonify({'status': 'success', 'redirect_url': url_for('show_dharti_result', result_id=new_diagnosis.id)})
+
+@app.route('/weather_result/<int:result_id>')
+def show_dharti_result(result_id):
+    diagnosis_record = db.session.get(Diagnosis, result_id)
+    if not diagnosis_record: return "Diagnosis not found", 404
+    try:
+        data = json.loads(diagnosis_record.ai_diagnosis)
+    except:
+        data = { "weather_alerts": {}, "soil_profile": {}, "irrigation_planner": {}, "crop_suitability": [], "agri_news": [], "expert_contacts": [] }
+    
+    return render_template('dharti_result.html', diagnosis=diagnosis_record, data=data)
+
+@app.route('/generate_kheti_ayojan', methods=['POST'])
+def generate_kheti_ayojan():
+    req_data = request.json
+    result_id = req_data.get('result_id')
+    land_area = req_data.get('land_area')
+    land_unit = req_data.get('land_unit')
+    language = req_data.get('language', 'Hindi')
+
+    diagnosis_record = db.session.get(Diagnosis, result_id)
+    if not diagnosis_record:
+        return jsonify({'error': 'Diagnosis not found'}), 404
+
+    if not dharti_agent:
+        return jsonify({'error': 'Dharti AI Agent is offline'}), 500
+
+    plan_data = dharti_agent.generate_farm_plan(diagnosis_record.ai_diagnosis, land_area, land_unit, language)
+    return jsonify(plan_data)
 
 if __name__ == '__main__':
     with app.app_context(): db.create_all()
