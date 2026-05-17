@@ -1,174 +1,117 @@
+<div align="center">
 
+# 🌾 Krishi Shayak AI 🌾
+### *The Unified Platform for India's Smart Farming Ecosystem*
 
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python&logoColor=white)](#)
+[![Flask](https://img.shields.io/badge/Flask-Web%20Framework-black?style=for-the-badge&logo=flask)](#)
+[![Gemini](https://img.shields.io/badge/Google%20Gemini-3.1%20Flash%20Lite-orange?style=for-the-badge&logo=google)](#)
+[![Vertex AI](https://img.shields.io/badge/GCP-Vertex%20AI-blue?style=for-the-badge&logo=googlecloud)](#)
+[![Live on Render](https://img.shields.io/badge/Deployed-Live_on_Render-brightgreen?style=for-the-badge&logo=render)](#)
 
-```markdown
-# 🌾 KisanMitra AI (Intelligent Digital Agronomist for Bharat)(Our this project is a PRE-EXISTING PROJECT WHICH WE HAVE FURTHER DEVELOPED ADDING VARIOUS OTHER USEFUL FEATURES )
+*An enterprise-grade, multi-modal, multilingual, and voice-enabled agricultural AI platform.* <br>
+**Evolved from KisanMitra — Built by Tech Surfers (Paaras Shemrudkar & Prachi Sharma)**
 
-> **"From a Simple Plant Doctor to a Forensic-Level Real-Time Agricultural Agent."**
+[🌍 Launch Live Web App](https://kisanmitra-app.onrender.com) • [Explore Features](#-the-four-pillars-of-krishi-shayak) • [System Architecture](#-core-platform-capabilities) • [Tech Stack](#-technology-stack) 
 
-**🌐 Live App:** [https://kisanmitra-app.onrender.com](https://kisanmitra-app.onrender.com)
-
----
-
-## 📖 Table of Contents
-- [🚀 Evolution: Before vs. Now](#-evolution-before-vs-now)
-- [🚩 Problem Statement](#-problem-statement)
-- [💡 Our Solution](#-our-solution)
-- [✨ Key Features](#-key-features)
-- [🛠 Tech Stack & Architecture](#-tech-stack--architecture)
-- [📂 Project Structure](#-project-structure)
-- [🚀 Local Installation](#-local-installation)
-- [🔮 Future Roadmap](#-future-roadmap)
-- [🤝 Contributors](#-contributors)
+</div>
 
 ---
 
----
+## 🌟 About The Project
+**Krishi Shayak AI** is a state-of-the-art agricultural ERP and diagnostic platform designed to empower Indian farmers. Evolving far beyond a simple crop-scanning app, Krishi Shayak is a completely decoupled, chained-inference AI ecosystem consisting of **four specialized AI agents**. 
 
-## 🚩 Problem Statement
+From detecting cattle diseases to fetching live IMD weather alerts and generating localized financial insurance plans, Krishi Shayak acts as a Master Agronomist, Veterinarian, and Financial Advisor—accessible seamlessly in **10 Indian regional languages**.
 
-Agriculture is the backbone of our economy, yet farmers face significant challenges:
-1.  **Delayed Diagnosis:** Millions of tons of crops are lost annually due to incorrect or late detection of plant diseases.
-2.  **Information Gap:** Access to expert Agronomists is expensive and rare in remote villages.
-3.  **Language Barrier:** Most agri-tech tools are in English, alienating the rural population.
-4.  **Static Data:** Existing apps provide outdated advice, not real-time market prices or current local officer contacts.
+🚀 **Experience the platform live right now:** [https://kisanmitra-app.onrender.com](https://kisanmitra-app.onrender.com)
 
 ---
 
+## 🏛️ The Four Pillars of Krishi Shayak
 
-## 🚀 Evolution: Before vs. Now
-
-We have transformed KisanMitra from a static diagnosis tool into a **Dynamic, Agentic Intelligence**. Here is how we upgraded the core architecture:
-
-| Feature Category | ❌ Before (Standard Prototype) | ✅ NOW (KisanMitra 2.0 Agent) |
-| :--- | :--- | :--- |
-| **AI Intelligence** | Basic image classification & diagnosis. | **Forensic Pathologist Persona:** Identifies pathogen lifecycles, specific symptoms, and root causes. |
-| **Data Accuracy** | Static training data (often outdated). | **Google Search Grounding:** Fetches **Real-Time** medicine prices and current availability from the live web. |
-| **Local Support** | Generic advice (e.g., "Contact local officer"). | **Hyper-Local Intelligence:** Finds **Actual Names & Phone Numbers** of KVK officers in the user's specific district/village. |
-| **Reliability** | Prone to crashes if AI output was malformed. | **Self-Healing Engine:** Automatically detects errors and retries with internal knowledge fallback. **100% Uptime.** |
-| **Reporting** | Web-only view; hard to share. | **CEO-Level PDF Reports:** Auto-generates professional, printable PDFs with **Smart Image Resizing** & **Hybrid Layouts**. |
-| **User Interface** | Standard text display. | **Immersive UI:** Neon product tags (Organic/Chemical), interactive video glow effects, and "breathing" animations. |
-
-
-## 💡 Our Solution
-
-**KisanMitra AI** is a **Multilingual, Voice-Enabled, Agentic AI** that acts as a 24/7 personal plant doctor. 
-
-Unlike standard classifiers, it uses a **Forensic Pathologist Persona** grounded with **Google Search** to provide real-time cures, verified local contacts, and professional reports—all accessible via a simple photo.
-
----
-
-## ✨ Key Features
-
-### 1. 📸 Smart Input System (Camera & Location)
-* **Live Camera Capture:** Farmers can take photos directly within the app or upload from the gallery.
-* **Region-Specific Context:** Users select their **State/Region** (e.g., Gujarat, Bihar), ensuring the AI provides advice relevant to the local climate and available resources.
-
-### 2. 🔍 Forensic Diagnosis (Agentic AI)
-Powered by **Google Gemini 2.5 Flash**, the agent acts as a "Forensic Plant Pathologist."
-* **Deep Analysis:** Identifies pathogen lifecycles, specific visual symptoms, and root causes.
-* **Self-Healing Engine:** A robust backend that automatically detects data errors (JSON failures) and "heals" itself by retrying with internal knowledge, ensuring **100% reliability**.
-
-### 3. 🌐 Real-Time Market Intelligence (Google Search)
-The agent doesn't just guess; it **searches the live web** to provide:
-* **Live Medicine Prices:** "Buy Now" links with current market availability.
-* **Verified Local Experts:** Finds *actual* names and phone numbers of KVKs (Krishi Vigyan Kendras) and Agriculture Officers in the user's specific district.
-
-### 4. 📄 Professional PDF Reports (Hybrid Layout)
-Users can download a **High-Level Clickable Diagnostic Report** (`.pdf`):
-* **Hybrid Layout Engine:** Automatically transforms from a **2x2 Grid (Web)** to a **Clean Vertical Stack (Print)** for better readability.
-* **Smart Image Resizing:** Ensures user-uploaded crop photos are never stretched or distorted in the PDF.
-* **Clickable Resources:** PDF links remain active, directing farmers to videos, maps, and purchase pages.
-
-### 5. 🗣️ Vernacular Voice & Text Support
-* **Multilingual:** Full support for **Hindi, English, Marathi, Gujarati, Tamil, Punjabi, and Bengali**.
-* **Voice-First Design:** Includes **Speech-to-Text** (for queries) and **Text-to-Speech** (Audio Advice) so farmers can *listen* to the diagnosis.
-
-### 6. 🎨 Immersive User Experience
-* **Neon Product Tags:** Visual indicators for **Organic (Green)** vs **Chemical (Red)** remedies.
-* **Interactive Glow:** Hover effects on video links to guide user interaction.
-* **Breathing Loader:** A calming, organic animation during the analysis phase.
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="50%">
+        <h3>🌱 KisanShayak AI</h3>
+        <i>The Personal Crop Doctor</i><br><br>
+        Upload an image of a diseased crop or describe the issue via Voice. The AI scans the flora to provide <b>Organic & Chemical remedies</b>, survival timelines, required products, and YouTube setup tutorials.
+      </td>
+      <td align="center" width="50%">
+        <h3>🐄 Pashu Sahayak AI</h3>
+        <i>The Livestock Guardian</i><br><br>
+        A dedicated veterinary agent for cattle health. It analyzes animal symptoms, provides <b>Ethnoveterinary & Pharmaceutical cures</b>, and establishes crucial Herd Safety and Quarantine protocols.
+      </td>
+    </tr>
+    <tr>
+      <td align="center" width="50%">
+        <h3>🛡️ Krishi Rakshak</h3>
+        <i>The Financial Shield</i><br><br>
+        Upload a PDF/Image of any diagnosis report. The AI acts as an actuary, calculating the <b>Financial Health Score</b>, estimated recovery costs, and mapping the farmer to eligible <b>Govt Insurance Schemes (PMFBY)</b>.
+      </td>
+      <td align="center" width="50%">
+        <h3>🌍 Dharti Chakra</h3>
+        <i>Weather, Geology & Alerts</i><br><br>
+        Analyzes soil images and GPS coordinates using <b>Live Google Search</b> to fetch IMD weather alerts. Includes the revolutionary <b>"Kheti Ayojan"</b> feature—a chained AI inference that generates a custom step-by-step farming plan based on land size.
+      </td>
+    </tr>
+  </table>
+</div>
 
 ---
 
-## 🛠 Tech Stack & Architecture
+## 🚀 Core Platform Capabilities
 
-| Component | Technology |
+### 🗣️ The Polyglot Engine (100% Native i18n)
+Zero English bleed-through. The entire platform—from UI buttons to dynamic AI JSON responses—is natively translated via a custom `translations.js` dictionary and strict LLM prompting.
+Supported: *English, Hindi, Gujarati, Marathi, Tamil, Telugu, Bengali, Punjabi, Kannada, Malayalam.*
+
+### 🎙️ Multi-Modal Input & Audio Output
+* **Input:** Farmers can type, upload Images/PDFs, use the device Camera, or dictate via the **Web Speech API**.
+* **Output:** Every report dynamically generates a localized MP3 summary using **EdgeTTS/gTTS**, playable directly inside the browser.
+
+### 🧠 Chained AI Inference (Kheti Ayojan)
+Dharti Chakra utilizes an advanced background AJAX architecture. The output of the primary Weather/Soil AI is fed *directly* into a secondary Agronomist AI prompt alongside user inputs (Land Size/Crops) to generate a hyper-specific, actionable **Farming Plan** without reloading the page.
+
+### 🌐 Google Search Grounded
+Agents are powered by Vertex AI with `use_search=True`, allowing them to bypass LLM hallucinations by actively scraping the web for Live IMD Weather Warnings, Current Agri-News, and localized NGO/Expert contacts.
+
+### 📄 One-Click PDF Export
+Powered by `html2pdf.js`, farmers can download highly-styled, printable PDF versions of any agent's report with a single tap, complete with dynamic layout adjustments.
+
+---
+
+## 🌍 Live Deployment
+
+Krishi Shayak AI is hosted securely in the cloud and requires zero installation or local setup. The platform is accessible globally from any modern smartphone or desktop browser.
+
+👉 **[Launch Krishi Shayak AI (Live Web App)](https://kisanmitra-app.onrender.com)**
+
+---
+
+## 💻 Technology Stack
+
+| Category | Technologies |
 | :--- | :--- |
-| **Frontend** | HTML5, CSS3 (Glassmorphism), JavaScript (Fetch API) |
-| **Backend** | Python, Flask (Microservice Architecture) |
-| **AI Brain** | **Google Gemini 2.5 Flash** (via Google GenAI SDK) |
-| **Agent Tools** | **Google Search Tool** (Grounding), Brace-Counting Parser (Data Sanitization) |
-| **Audio** | Edge-TTS (Neural High-Quality Voices), gTTS (Fallback) |
-| **PDF Engine** | `html2pdf.js` (Client-side rendering with Hybrid Mode) |
-| **Database** | SQLite (SQLAlchemy ORM) |
-
-## 🤝 Powered by Google Technologies
-
-KisanMitra AI is built on the robust **Google Cloud** and **AI ecosystem**, ensuring enterprise-grade reliability and intelligence.
-
-| Technology | Usage in KisanMitra |
-| :--- | :--- |
-| **Google Gemini 2.5 Flash** | The core "Forensic Pathologist" brain. It analyzes crop images, detects diseases, and generates detailed treatment plans with high speed and accuracy. |
-| **Google Search Grounding (Vertex AI)** | Connects the frozen AI model to the live internet. It fetches **real-time prices** of medicines and finds **verified contact numbers** of local Agriculture Officers. |
-| **Google Cloud Vertex AI** | The managed machine learning platform that hosts and serves the Gemini model, ensuring low latency and high availability. |
-| **Google Text-to-Speech (gTTS)** | Powers the vernacular audio advice, allowing farmers to listen to the diagnosis in their native language (Hindi, Gujarati, etc.). |
-| **Google Maps** | Integrated into the "Local Experts" section to provide farmers with direct navigation links to nearby Krishi Vigyan Kendras (KVKs). |
+| **Frontend Architectures** | HTML5, CSS3 (Custom Glassmorphism), Vanilla JavaScript, Bootstrap (Navbar) |
+| **Backend Framework** | Python 3.9+, Flask, Werkzeug, SQLite3 (SQLAlchemy/Native) |
+| **AI & Machine Learning** | Google Gemini 3.1 Flash-Lite Preview, Google Cloud Vertex AI SDK |
+| **Data Processing & Utilities** | PyMuPDF (`fitz`) for Silent PDF Compression, Pillow (`PIL`) for Image Optimization |
+| **APIs & Integrations** | EdgeTTS (Audio Synth), HTML2PDF, Web Speech API |
 
 ---
 
-## 📂 Project Structure
-
-```bash
-KisanMitra/
-├── app.py                 # Main Flask Application (Routes & Logic)
-├── kisan_agent.py         # AI Brain (Search Tool, Self-Healing Parser, Prompt Engineering)
-├── models.py              # Database Schema (Users, Diagnosis History)
-├── requirements.txt       # Dependencies (Flask, Google-GenAI, etc.)
-├── static/
-│   ├── uploads/           # User uploaded images
-│   └── audio/             # Generated MP3 advice
-└── templates/
-    ├── index.html         # Camera/Upload UI with Location & Breathing Loader
-    └── result.html        # The "CEO-Level" Dashboard & Hybrid PDF Engine
-
-```
-
 ---
 
+## 👨‍💻 The Team (Tech Surfers)
 
-## 🔮 Future Roadmap
-
-* **Offline Mode:** Lightweight TFLite model for areas with zero internet connectivity.
-* **More Enhanced Version For Smartphone:** Enhanced versions of the app for smartphone(It currently works though.).
-* **Cattel Sahayak:** Similar Agent Integrated for Cattle.
-* **Drone Integration:** API support for aerial imagery analysis.
-* **Community Forum:** A peer-to-peer network for farmers to discuss issues.
-* **IoT Sensors:** Integration with soil moisture and NPK sensors.
-
----
-
-## 🤝 Contributors
-
-* **PAARAS SHEMRUDKAR** - *Lead Developer / AI Architect / System Design / Research / Market Analysis*
-* **PRACHI SHARMA** - *UI/UX Design / Research / Quality Assurance*
-* **YASHKUMAR BHOI** - *Testing / Research / Market Analysis*
-
+* **Paaras Shemrudkar** - *System Ideation & Lead - Backend / AI Architect & Orchrestator*
+* **Prachi Sharma** - *Lead UI/UX Architect & Frontend Developer, Q&A*
 
 ---
 
 <div align="center">
-<b>Made with ❤️ for Indian Farmers (Annadata) 🌾</b>
-
-<i>"Technology that touches the soil."</i>
+  <p><b>Built with ❤️ and <i>Khoon Pasina</i> for the Farmers of India.</b></p>
+  <p><a href="https://kisanmitra-app.onrender.com">Start using Krishi Shayak AI today.</a></p>
+  <p>© 2026 Tech Surfers. All rights reserved.</p>
 </div>
-
-## License & Copyright
-
-© 2026 Paaras Shemrudkar & Prachi Sharma (Owners of KisanMitra AI). All rights reserved.
-
-This project is proprietary software. You may not use, copy, modify, or distribute the code in this repository without express written permission from the owners.
-
-```
-
-```
